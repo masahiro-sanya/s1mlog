@@ -9,7 +9,7 @@ env:
   MY_AWS_REGION: "ap-northeast-1"
   AWS_ROLENAME: "s1mlog-prd-github-role"
   AWS_S3_BUCKET: "s1mlog-prd-static-web-hosting-bucket"
-  SOURCE_DIR: "../../../front/,next"
+  SOURCE_DIR: "../../../front/.next"
   DEST_DIR: "./"
 
 jobs:
@@ -26,6 +26,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{env.AWS_ROLENAME}}
           aws-region: ${{env.MY_AWS_REGION}}
+      -
       - name: Copy files to S3
         run: |
           aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/${{env.DEST_DIR}}/ --exclude '.*git*'
