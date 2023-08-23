@@ -55,4 +55,3 @@ npm run dev
 リポジトリを紐付け、環境変数を `Environment Variables` に登録後、デプロイしてみましょう。
 
 ![](public/img-vercel-settings.png)
-update
