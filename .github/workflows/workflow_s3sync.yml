@@ -26,11 +26,18 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_ACCOUNT_ID}}:role/${{env.AWS_ROLENAME}}
           aws-region: ${{env.MY_AWS_REGION}}
+      - name: make .env
+        run: |
+          cd front
+          touch .env
+          echo "MICROCMS_API_KEY=${{ secrets.MICROCMS_API_KEY }}" >> .env
+          echo "MICROCMS_SERVICE_DOMAIN=${{ secrets.MICROCMS_SERVICE_DOMAIN }}" >> .env
+          echo "BASE_URL=${{ secrets.BASE_URL }}" >> .env
+          cat .env
       - name: build
         run: |
           pwd
           ls -la
-          cd front
           npm install
           npm run build
       - name: Copy files to S3
