@@ -44,5 +44,6 @@ jobs:
       - name: Copy files to S3
         run: |
           pwd
-          ls -la
+          ls -la ../../../front
+          cd front
           aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/${{env.DEST_DIR}}/ --exclude '.*git*'
