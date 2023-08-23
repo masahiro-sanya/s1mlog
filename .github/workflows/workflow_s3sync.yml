@@ -43,7 +43,7 @@ jobs:
           npm run build
       - name: Copy files to S3
         run: |
+          cd front
           pwd
           ls -la
-          cd front
           aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/${{env.DEST_DIR}}/ --exclude '.*git*'
