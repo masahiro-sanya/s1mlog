@@ -38,6 +38,7 @@ jobs:
         run: |
           pwd
           ls -la
+          cd front
           npm install
           npm run build
       - name: Copy files to S3
