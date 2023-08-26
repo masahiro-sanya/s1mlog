@@ -46,4 +46,4 @@ jobs:
           cd front
           pwd
           ls -la
-          aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/${{env.DEST_DIR}}/ --exclude '.*git*'
+          aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/ --exclude '.*git*'
