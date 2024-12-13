@@ -95,3 +95,16 @@ export const getTag = async (contentId: string, queries?: MicroCMSQueries) => {
 
   return detailData;
 };
+
+export const getWriter = async () => {
+  try {
+    const writerData = await client.get({
+      endpoint: 'writers',
+    });
+    const firstWriter = writerData.contents[0];
+    return firstWriter;
+  } catch (error) {
+    console.error('Error fetching writers:', error);
+    throw new Error('Failed to fetch writers');
+  }
+};
