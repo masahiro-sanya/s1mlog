@@ -4,22 +4,24 @@ import Pagination from '@/components/Pagination';
 import ArticleList from '@/components/ArticleList';
 
 type Props = {
-  params: {
+  params: Promise<{
     current: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     q?: string;
-  };
+  }>;
 };
 
 export const revalidate = 60;
 
 export default async function Page({ params, searchParams }: Props) {
-  const current = parseInt(params.current as string, 10);
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const current = parseInt(resolvedParams.current as string, 10);
   const data = await getList({
     limit: LIMIT,
     offset: LIMIT * (current - 1),
-    q: searchParams.q,
+    q: resolvedSearchParams.q,
   });
   return (
     <>
@@ -28,7 +30,7 @@ export default async function Page({ params, searchParams }: Props) {
         totalCount={data.totalCount}
         current={current}
         basePath="/search"
-        q={searchParams.q}
+        q={resolvedSearchParams.q}
       />
     </>
   );

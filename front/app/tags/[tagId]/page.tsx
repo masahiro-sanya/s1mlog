@@ -4,15 +4,16 @@ import Pagination from '@/components/Pagination';
 import ArticleList from '@/components/ArticleList';
 
 type Props = {
-  params: {
+  params: Promise<{
     tagId: string;
-  };
+  }>;
 };
 
 export const revalidate = 60;
 
 export default async function Page({ params }: Props) {
-  const { tagId } = params;
+  const resolvedParams = await params;
+  const { tagId } = resolvedParams;
   const data = await getList({
     limit: LIMIT,
     filters: `tags[contains]${tagId}`,

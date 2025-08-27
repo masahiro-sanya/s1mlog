@@ -9,7 +9,7 @@ env:
   MY_AWS_REGION: "ap-northeast-1"
   AWS_ROLENAME: "s1mlog-prd-github-role"
   AWS_S3_BUCKET: "s1mlog-prd-static-web-hosting-bucket"
-  SOURCE_DIR: ".next"
+  SOURCE_DIR: "out"
   DEST_DIR: "./"
 
 jobs:
@@ -46,4 +46,8 @@ jobs:
           cd front
           pwd
           ls -la
-          aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/ --exclude '.*git*'
+          aws s3 sync ${{env.SOURCE_DIR}} s3://${{env.AWS_S3_BUCKET}}/ --exclude '.*git*' --delete
+      - name: Invalidate CloudFront
+        run: |
+          DISTRIBUTION_ID=$(aws ssm get-parameter --name "s1mlog-prd-distribution-id" --query "Parameter.Value" --output text)
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"

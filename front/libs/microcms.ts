@@ -49,51 +49,60 @@ export const client = createClient({
 
 // ブログ一覧を取得
 export const getList = async (queries?: MicroCMSQueries) => {
-  const listData = await client
-    .getList<Blog>({
+  try {
+    const listData = await client.getList<Blog>({
       endpoint: 'blog',
       queries,
-    })
-    .catch(notFound);
-  return listData;
+    });
+    return listData;
+  } catch (error) {
+    console.error('Error fetching blog list:', error);
+    return { contents: [], totalCount: 0, offset: 0, limit: 0 };
+  }
 };
 
 // ブログの詳細を取得
 export const getDetail = async (contentId: string, queries?: MicroCMSQueries) => {
-  const detailData = await client
-    .getListDetail<Blog>({
+  try {
+    const detailData = await client.getListDetail<Blog>({
       endpoint: 'blog',
       contentId,
       queries,
-    })
-    .catch(notFound);
-
-  return detailData;
+    });
+    return detailData;
+  } catch (error) {
+    console.error(`Error fetching blog detail (${contentId}):`, error);
+    notFound();
+  }
 };
 
 // タグの一覧を取得
 export const getTagList = async (queries?: MicroCMSQueries) => {
-  const listData = await client
-    .getList<Tag>({
+  try {
+    const listData = await client.getList<Tag>({
       endpoint: 'tags',
       queries,
-    })
-    .catch(notFound);
-
-  return listData;
+    });
+    return listData;
+  } catch (error) {
+    console.error('Error fetching tag list:', error);
+    return { contents: [], totalCount: 0, offset: 0, limit: 0 };
+  }
 };
 
 // タグの詳細を取得
 export const getTag = async (contentId: string, queries?: MicroCMSQueries) => {
-  const detailData = await client
-    .getListDetail<Tag>({
+  try {
+    const detailData = await client.getListDetail<Tag>({
       endpoint: 'tags',
       contentId,
       queries,
-    })
-    .catch(notFound);
-
-  return detailData;
+    });
+    return detailData;
+  } catch (error) {
+    console.error(`Error fetching tag detail (${contentId}):`, error);
+    notFound();
+  }
 };
 
 export const getWriter = async () => {
@@ -105,6 +114,14 @@ export const getWriter = async () => {
     return firstWriter;
   } catch (error) {
     console.error('Error fetching writers:', error);
-    throw new Error('Failed to fetch writers');
+    // デフォルトのライター情報を返す
+    return {
+      id: 'default',
+      name: 'Default Writer',
+      profile: 'No profile available',
+      createdAt: '',
+      updatedAt: '',
+      publishedAt: '',
+    };
   }
 };

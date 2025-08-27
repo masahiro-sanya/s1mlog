@@ -4,17 +4,18 @@ import Pagination from '@/components/Pagination';
 import ArticleList from '@/components/ArticleList';
 
 type Props = {
-  params: {
+  params: Promise<{
     tagId: string;
     current: string;
-  };
+  }>;
 };
 
 export const revalidate = 60;
 
 export default async function Page({ params }: Props) {
-  const { tagId } = params;
-  const current = parseInt(params.current as string, 10);
+  const resolvedParams = await params;
+  const { tagId } = resolvedParams;
+  const current = parseInt(resolvedParams.current as string, 10);
   const data = await getList({
     limit: LIMIT,
     offset: LIMIT * (current - 1),

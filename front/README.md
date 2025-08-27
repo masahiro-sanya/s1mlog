@@ -59,10 +59,59 @@ npm run dev
 
 設定後はコンテンツ編集画面にて画面プレビューボタンが利用可能になります。
 
-## Vercel へのデプロイ
+## ビルドコマンド
+
+```bash
+npm run build        # 静的サイトをビルド（outディレクトリに出力）
+npm run lint         # ESLintでコードチェック
+npm run format       # Prettierでコードフォーマット
+```
+
+## デプロイ
+
+### AWS S3 + CloudFront へのデプロイ
+
+このプロジェクトは AWS S3 と CloudFront を使用した静的サイトホスティングに対応しています。
+
+1. インフラストラクチャのセットアップ（`../infrastructure`参照）
+2. GitHub Secrets の設定
+   - `AWS_ACCOUNT_ID`: AWS アカウント ID
+   - `MICROCMS_API_KEY`: microCMS API キー
+   - `MICROCMS_SERVICE_DOMAIN`: microCMS サービスドメイン
+   - `BASE_URL`: CloudFront の URL
+3. main ブランチへプッシュすると自動でデプロイされます
+
+### Vercel へのデプロイ
 
 [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)から簡単にデプロイが可能です。
 
 リポジトリを紐付け、環境変数を `Environment Variables` に登録後、デプロイしてみましょう。
 
 ![](public/img-vercel-settings.png)
+
+## microCMS API の設定
+
+以下の3つのAPIを作成してください：
+
+1. **ブログ API**（エンドポイント: `blog`）
+   - title（テキストフィールド）
+   - description（テキストフィールド）
+   - content（リッチエディタ）
+   - thumbnail（画像）
+   - tags（複数コンテンツ参照 - タグ）
+   - writer（コンテンツ参照 - ライター）
+
+2. **タグ API**（エンドポイント: `tags`）
+   - name（テキストフィールド）
+
+3. **ライター API**（エンドポイント: `writers`）
+   - name（テキストフィールド）
+   - profile（テキストエリア）
+   - image（画像）
+
+## 技術スタック
+
+- **Next.js 15.5.2** - App Router 使用
+- **TypeScript 5.9.2**
+- **microCMS SDK** - コンテンツ管理
+- **CSS Modules** - スタイリング
