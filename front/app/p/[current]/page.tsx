@@ -11,6 +11,28 @@ type Props = {
 
 export const revalidate = 60;
 
+export async function generateStaticParams() {
+  try {
+    const data = await getList({
+      limit: 1,
+    });
+    
+    const pageCount = Math.ceil(data.totalCount / LIMIT);
+    const paths = [];
+    
+    for (let i = 2; i <= pageCount; i++) {
+      paths.push({
+        current: i.toString(),
+      });
+    }
+    
+    return paths;
+  } catch (error) {
+    console.error('Error generating static params for pagination:', error);
+    return [];
+  }
+}
+
 export default async function Page({ params }: Props) {
   const resolvedParams = await params;
   const current = parseInt(resolvedParams.current as string, 10);
