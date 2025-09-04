@@ -145,6 +145,127 @@ npx cdk diff     # 変更内容確認
 npx cdk deploy   # デプロイ
 ```
 
+## 🧪 テスト
+
+### テスト環境のセットアップ
+
+#### フロントエンド
+```bash
+cd front
+npm install  # テスト依存関係は既にインストール済み
+```
+
+#### インフラストラクチャ
+```bash
+cd infrastructure
+npm install  # テスト依存関係は既にインストール済み
+```
+
+### テストの実行
+
+#### ユニットテスト（フロントエンド）
+```bash
+cd front
+
+# 全てのテストを実行
+npm test
+
+# ウォッチモードでテスト（開発中）
+npm run test:watch
+
+# カバレッジレポート付きでテスト実行
+npm run test:coverage
+```
+
+#### インフラストラクチャテスト
+```bash
+cd infrastructure
+
+# CDKスタックのテスト実行
+npm test
+```
+
+#### E2Eテスト（Playwright）
+```bash
+cd front
+
+# Playwrightブラウザのインストール（初回のみ）
+npx playwright install
+
+# E2Eテストを実行
+npx playwright test
+
+# UIモードでテスト実行（デバッグ用）
+npx playwright test --ui
+
+# 特定のブラウザでテスト
+npx playwright test --project=chromium
+```
+
+### テストファイルの追加方法
+
+#### ユニットテスト
+- **場所**: `front/libs/__tests__/`、`front/components/__tests__/`
+- **命名規則**: `[ファイル名].test.ts` または `[ファイル名].test.tsx`
+- **例**:
+```typescript
+// front/libs/__tests__/example.test.ts
+import { someFunction } from '../example';
+
+describe('someFunction', () => {
+  it('期待される結果を返す', () => {
+    expect(someFunction('input')).toBe('expected output');
+  });
+});
+```
+
+#### コンポーネントテスト
+```typescript
+// front/components/__tests__/Component.test.tsx
+import { render, screen } from '@testing-library/react';
+import Component from '../Component';
+
+describe('Component', () => {
+  it('正しくレンダリングされる', () => {
+    render(<Component />);
+    expect(screen.getByText('Expected Text')).toBeInTheDocument();
+  });
+});
+```
+
+#### E2Eテスト
+- **場所**: `front/e2e/`
+- **命名規則**: `[機能名].spec.ts`
+- **例**:
+```typescript
+// front/e2e/feature.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('機能が正しく動作する', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle(/Expected Title/);
+});
+```
+
+### テストカバレッジ
+
+現在のテストカバレッジ目標:
+- **ブランチ**: 50%
+- **関数**: 50%
+- **行**: 50%
+- **ステートメント**: 50%
+
+カバレッジレポートは `front/coverage/` ディレクトリに生成されます。
+
+### CI/CD でのテスト
+
+GitHub Actionsで自動的にテストが実行されます。プルリクエスト作成時に:
+1. ユニットテストの実行
+2. Lintチェック
+3. ビルドの確認
+
+が行われます。
+
 ## 🔒 セキュリティ
 
 - GitHub Actions OIDC認証（パスワード不要）
