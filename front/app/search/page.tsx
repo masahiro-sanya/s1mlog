@@ -1,6 +1,7 @@
 import { getList } from '@/libs/microcms';
 import ArticleList from '@/components/ArticleList';
 import Pagination from '@/components/Pagination';
+import { LIMIT } from '@/constants';
 
 type Props = {
   searchParams: Promise<{
@@ -14,7 +15,6 @@ export const revalidate = 60;
 export default async function Page({ searchParams }: Props) {
   const resolvedSearchParams = await searchParams;
   const page = parseInt(resolvedSearchParams.page || '1', 10);
-  const { LIMIT } = await import('@/constants');
   
   const data = await getList({
     q: resolvedSearchParams.q,
