@@ -1,16 +1,15 @@
-# S1MLOG - Serverless Blog Platform
+# S1MLOG - Modern Blog Platform
 
-AWS S3 + CloudFront + microCMSを使用した、サーバーレスブログプラットフォームです。
+Next.js + Vercel + microCMSを使用した、モダンなブログプラットフォームです。
 
 ## 🚀 概要
 
-S1MLOGは、以下の技術を組み合わせた完全サーバーレスのブログシステムです：
+S1MLOGは、以下の技術を組み合わせたブログシステムです：
 
 - **フロントエンド**: Next.js 15.5（静的サイト生成）
 - **CMS**: microCMS（ヘッドレスCMS）
-- **ホスティング**: AWS S3 + CloudFront
-- **CI/CD**: GitHub Actions（OIDC認証）
-- **インフラ管理**: AWS CDK
+- **ホスティング**: Vercel
+- **スタイリング**: CSS Modules
 
 ## 📁 プロジェクト構成
 
@@ -28,21 +27,11 @@ s1mlog/
 │   ├── public/               # 静的アセット
 │   └── package.json          # 依存関係
 │
-├── infrastructure/           # AWS CDKインフラコード
-│   ├── lib/
-│   │   ├── StaticHostingStack.ts  # S3 + CloudFront
-│   │   └── GithubRoleStack.ts     # GitHub Actions用IAMロール
-│   ├── bin/                  # CDKエントリーポイント
-│   └── package.json          # 依存関係
-│
-├── .github/
-│   └── workflows/
-│       └── workflow_s3sync.yml    # 自動デプロイワークフロー
-│
 ├── .gitignore               # Git除外設定
 ├── .eslintrc.json           # ESLint設定
 ├── .prettierrc              # Prettier設定
-└── CLAUDE.md                # Claude Code用ガイド（Git管理外）
+├── README.md                # このファイル
+└── CLAUDE.md                # Claude Code用ガイド
 ```
 
 ## 🔧 技術スタック
@@ -53,18 +42,12 @@ s1mlog/
 - **CSS Modules** - コンポーネントスコープのスタイリング
 - **microCMS SDK** - コンテンツ取得
 
-### インフラストラクチャ
-- **AWS CDK 2.212.0** - Infrastructure as Code
-- **AWS S3** - 静的ファイルホスティング
-- **Amazon CloudFront** - CDN配信
-- **AWS IAM** - OIDC認証でのセキュアなデプロイ
-
 ## 🚦 クイックスタート
 
 ### 前提条件
 - Node.js 18以上
-- AWSアカウント
 - microCMSアカウント
+- Vercelアカウント
 - GitHubリポジトリ
 
 ### セットアップ手順
@@ -75,16 +58,7 @@ git clone https://github.com/masahiro-sanya/s1mlog.git
 cd s1mlog
 ```
 
-#### 2. AWSインフラのデプロイ
-```bash
-cd infrastructure
-npm install
-echo "prd=YOUR_AWS_ACCOUNT_ID" > .env
-npx cdk bootstrap -c account=YOUR_AWS_ACCOUNT_ID -c attrphase=prd -c target=app
-npx cdk deploy --all -c account=YOUR_AWS_ACCOUNT_ID -c attrphase=prd -c target=app
-```
-
-#### 3. microCMS設定
+#### 2. microCMS設定
 microCMS管理画面で以下のAPIを作成：
 
 | API名 | エンドポイント | フィールド |
@@ -93,77 +67,77 @@ microCMS管理画面で以下のAPIを作成：
 | タグ | tags | name |
 | ライター | writers | name, profile, image |
 
-#### 4. GitHub Secrets設定
-リポジトリの Settings → Secrets and variables → Actions に設定：
-
-| Secret名 | 値 |
-|---------|-----|
-| AWS_ACCOUNT_ID | AWSアカウントID |
-| MICROCMS_API_KEY | microCMS APIキー |
-| MICROCMS_SERVICE_DOMAIN | microCMSサービスドメイン |
-| BASE_URL | CloudFrontのURL |
-
-#### 5. ローカル開発
+#### 3. ローカル開発環境のセットアップ
 ```bash
 cd front
 npm install
-# .envファイルを作成して環境変数を設定
-npm run dev  # http://localhost:3000
+
+# .envファイルを作成
+cat > .env << EOF
+MICROCMS_API_KEY=your_api_key_here
+MICROCMS_SERVICE_DOMAIN=your_domain_here
+BASE_URL=http://localhost:3000
+EOF
+
+# 開発サーバー起動
+npm run dev
 ```
+
+ブラウザで http://localhost:3000 にアクセス
+
+#### 4. Vercelへのデプロイ
+
+##### 初回セットアップ
+1. [Vercel](https://vercel.com)にログイン
+2. "New Project"をクリック
+3. GitHubリポジトリをインポート
+4. 以下の設定を行う：
+   - **Framework Preset**: Next.js
+   - **Root Directory**: `front`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `out`
+5. 環境変数を設定：
+   - `MICROCMS_API_KEY`: microCMS APIキー
+   - `MICROCMS_SERVICE_DOMAIN`: microCMSサービスドメイン
+   - `BASE_URL`: デプロイ後のURL（例: https://your-app.vercel.app）
+
+##### 自動デプロイ
+- `main`ブランチへのpushで本番環境に自動デプロイ
+- `develop`ブランチへのpushでプレビュー環境に自動デプロイ
+- Pull Requestごとにプレビュー環境が作成
 
 ## 🚀 デプロイ
 
-mainブランチへのpushで自動デプロイ：
+### Vercelでの自動デプロイ
 
 ```bash
 git add .
 git commit -m "Update blog"
-git push origin main
+git push origin main  # または develop
 ```
 
-GitHub Actionsが自動で：
+Vercelが自動で：
 1. Next.jsアプリをビルド
-2. 静的ファイルをS3にアップロード
-3. CloudFrontのキャッシュを無効化
+2. 静的ファイルを最適化
+3. グローバルCDNに配信
 
 ## 📝 開発ガイド
 
-### フロントエンド開発
+### 開発コマンド
 ```bash
 cd front
-npm run dev      # 開発サーバー起動
+npm run dev      # 開発サーバー起動（http://localhost:3000）
 npm run build    # 本番ビルド
 npm run lint     # ESLintチェック
 npm run format   # Prettierフォーマット
-```
-
-### インフラ変更
-```bash
-cd infrastructure
-npm run build    # TypeScriptコンパイル
-npx cdk diff     # 変更内容確認
-npx cdk deploy   # デプロイ
+npm run test     # テスト実行
 ```
 
 ## 🧪 テスト
 
-### テスト環境のセットアップ
-
-#### フロントエンド
-```bash
-cd front
-npm install  # テスト依存関係は既にインストール済み
-```
-
-#### インフラストラクチャ
-```bash
-cd infrastructure
-npm install  # テスト依存関係は既にインストール済み
-```
-
 ### テストの実行
 
-#### ユニットテスト（フロントエンド）
+#### ユニットテスト
 ```bash
 cd front
 
@@ -175,14 +149,6 @@ npm run test:watch
 
 # カバレッジレポート付きでテスト実行
 npm run test:coverage
-```
-
-#### インフラストラクチャテスト
-```bash
-cd infrastructure
-
-# CDKスタックのテスト実行
-npm test
 ```
 
 #### E2Eテスト（Playwright）
@@ -207,7 +173,7 @@ npx playwright test --project=chromium
 #### ユニットテスト
 - **場所**: `front/libs/__tests__/`、`front/components/__tests__/`
 - **命名規則**: `[ファイル名].test.ts` または `[ファイル名].test.tsx`
-- **例**:
+
 ```typescript
 // front/libs/__tests__/example.test.ts
 import { someFunction } from '../example';
@@ -219,24 +185,10 @@ describe('someFunction', () => {
 });
 ```
 
-#### コンポーネントテスト
-```typescript
-// front/components/__tests__/Component.test.tsx
-import { render, screen } from '@testing-library/react';
-import Component from '../Component';
-
-describe('Component', () => {
-  it('正しくレンダリングされる', () => {
-    render(<Component />);
-    expect(screen.getByText('Expected Text')).toBeInTheDocument();
-  });
-});
-```
-
 #### E2Eテスト
 - **場所**: `front/e2e/`
 - **命名規則**: `[機能名].spec.ts`
-- **例**:
+
 ```typescript
 // front/e2e/feature.spec.ts
 import { test, expect } from '@playwright/test';
@@ -247,47 +199,30 @@ test('機能が正しく動作する', async ({ page }) => {
 });
 ```
 
-### テストカバレッジ
-
-現在のテストカバレッジ目標:
-- **ブランチ**: 50%
-- **関数**: 50%
-- **行**: 50%
-- **ステートメント**: 50%
-
-カバレッジレポートは `front/coverage/` ディレクトリに生成されます。
-
-### CI/CD でのテスト
-
-GitHub Actionsで自動的にテストが実行されます。プルリクエスト作成時に:
-1. ユニットテストの実行
-2. Lintチェック
-3. ビルドの確認
-
-が行われます。
-
 ## 🔒 セキュリティ
 
-- GitHub Actions OIDC認証（パスワード不要）
-- S3バケットは非公開（CloudFront経由のみアクセス可）
-- 環境変数はGitHub Secretsで管理
+- 環境変数はVercelダッシュボードで安全に管理
+- APIキーはクライアントサイドに露出しない
+- 静的サイト生成により、サーバーサイドの脆弱性を最小化
 
-## 📊 アーキテクチャ図
+## 📊 パフォーマンス
 
-```
-[ユーザー] → [CloudFront] → [S3バケット]
-                ↑
-            [GitHub Actions]
-                ↑
-            [mainブランチpush]
-                ↑
-            [開発者]
+Vercelの機能により最適化：
+- **自動画像最適化**: Next.js Image コンポーネント
+- **グローバルCDN**: エッジロケーションからの配信
+- **静的生成**: ビルド時にHTMLを生成
+- **インクリメンタル静的再生成**: ISR対応可能
 
-[microCMS] → [Next.js SSG] → [静的HTML]
-```
+## 🌍 環境
+
+| 環境 | ブランチ | URL |
+|-----|---------|-----|
+| 本番 | main | https://your-app.vercel.app |
+| プレビュー | develop | https://your-app-preview.vercel.app |
+| PR | feature/* | 自動生成されるプレビューURL |
 
 ## 📚 詳細ドキュメント
 
-各ディレクトリのREADMEを参照してください：
 - [フロントエンド設定](./front/README.md)
-- [インフラ設定](./infrastructure/README.md)
+- [Claude Code用ガイド](./CLAUDE.md)
+
