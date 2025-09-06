@@ -1,9 +1,18 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // Prettierをデフォルトのフォーマッタに設定
+  "editor.formatOnSave": true, // 保存時に自動でフォーマット
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "always" // 保存時にESLintによる自動修正を適用
   },
-  "editor.formatOnSave": true
+  "eslint.alwaysShowStatus": true, // ESLintのステータスを常に表示
+  "eslint.format.enable": true, // ESLintでフォーマットを有効にする
+  "prettier.requireConfig": true, // プロジェクト内でPrettierの設定ファイルが必要
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "typescriptreact",
+    "javascriptreact"
+  ] // ESLintの対象としてTypeScriptも指定
 }

@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'"
+    "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "prettier": {
     "trailingComma": "all",
@@ -21,23 +24,34 @@
     "node": ">=18.x"
   },
   "dependencies": {
-    "@types/cheerio": "^0.22.31",
-    "@types/node": "18.15.3",
-    "@types/react": "18.0.28",
-    "@types/react-dom": "18.0.11",
-    "cheerio": "^1.0.0-rc.12",
-    "date-fns": "^2.29.3",
-    "date-fns-tz": "^2.0.0",
+    "@types/node": "24.3.0",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "cheerio": "^1.0.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "encoding": "^0.1.13",
-    "eslint": "8.36.0",
-    "eslint-config-next": "13.2.4",
-    "eslint-config-prettier": "^8.7.0",
-    "highlight.js": "^11.7.0",
-    "microcms-js-sdk": "^2.3.2",
-    "next": "^13.4.4",
-    "prettier": "^2.8.4",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "typescript": "4.9.5"
+    "eslint": "9.34.0",
+    "eslint-config-next": "15.5.2",
+    "eslint-config-prettier": "^10.1.8",
+    "highlight.js": "^11.11.1",
+    "microcms-js-sdk": "^3.2.0",
+    "next": "^15.5.2",
+    "prettier": "^3.6.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "typescript": "5.9.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.1.1",
+    "jest-environment-jsdom": "^30.1.1"
   }
 }

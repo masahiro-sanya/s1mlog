@@ -37,3 +37,11 @@ yarn-error.log*
 next-env.d.ts
 
 package-lock.json
+
+# Claude related files
+CLAUDE.md
+.claude
+*.claude
+
+# Serena MCP Server
+.serena/

@@ -4,13 +4,14 @@ import styles from './layout.module.css';
 
 type Props = {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     tagId: string;
-  };
+  }>;
 };
 
 export default async function TagsLayout({ children, params }: Props) {
-  const { tagId } = params;
+  const resolvedParams = await params;
+  const { tagId } = resolvedParams;
   const tag = await getTag(tagId);
   return (
     <div>

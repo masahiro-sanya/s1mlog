@@ -1,21 +1,38 @@
 import { Metadata } from 'next';
-import { getDetail } from '@/libs/microcms';
+import { getDetail, getList, type Article as ArticleType } from '@/libs/microcms';
 import Article from '@/components/Article';
 
 type Props = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
-  searchParams: {
-    dk: string;
-  };
+  }>;
+  searchParams: Promise<{
+    dk?: string;
+  }>;
 };
 
 export const revalidate = 60;
 
+export async function generateStaticParams() {
+  try {
+    const { contents } = await getList();
+    
+    const paths = contents.map((post: ArticleType) => ({
+      slug: post.id,
+    }));
+
+    return paths;
+  } catch (error) {
+    console.error('Error generating static params for articles:', error);
+    return [];
+  }
+}
+
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const data = await getDetail(params.slug, {
-    draftKey: searchParams.dk,
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const data = await getDetail(resolvedParams.slug, {
+    draftKey: resolvedSearchParams.dk,
   });
 
   return {
@@ -30,8 +47,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function Page({ params, searchParams }: Props) {
-  const data = await getDetail(params.slug, {
-    draftKey: searchParams.dk,
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const data = await getDetail(resolvedParams.slug, {
+    draftKey: resolvedSearchParams.dk,
   });
 
   return <Article data={data} />;
