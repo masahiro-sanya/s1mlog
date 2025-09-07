@@ -45,3 +45,6 @@ CLAUDE.md
 
 # Serena MCP Server
 .serena/
+
+# user-requested ignore
+AGENTS.md
