@@ -10,3 +10,15 @@
   background-color: #fff;
   border-top: 1px solid #ddd;
 }
+
+.links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sep {
+  color: #aaa;
+}
