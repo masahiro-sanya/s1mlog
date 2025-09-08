@@ -1,11 +1,45 @@
-.main {
-  width: 720px;
+.container {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 760px) 1fr;
+  gap: 32px;
+  width: 100%;
   margin: 0 auto;
+  padding: 0 24px 24px;
+  flex: 1;
+}
+
+.sidebar {
+  grid-column: 1;
+  position: sticky;
+  top: 16px; /* 上下は固定のまま */
+  align-self: start;
+  justify-self: center;
+}
+
+.sidebar > * {
+  max-width: 240px;
+  width: 100%;
+}
+
+.main {
+  grid-column: 2;
+  max-width: 760px;
+  width: 100%;
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0 16px 24px;
+  }
+  .sidebar {
+    grid-column: auto;
+    position: static;
+  }
   .main {
-    width: auto;
-    padding: 24px;
+    grid-column: auto;
+    max-width: 100%;
   }
 }

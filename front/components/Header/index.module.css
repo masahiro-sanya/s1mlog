@@ -1,8 +1,17 @@
 .header {
-  padding: 16px 24px 8px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
 }
 
 .logo {
-  height: 24px;
+  height: 32px;
   width: auto;
+  display: block; /* ベースライン隙間を解消 */
+}
+
+@media (max-width: 640px) {
+  .logo {
+    height: 24px;
+  }
 }

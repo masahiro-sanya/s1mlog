@@ -28,9 +28,36 @@
   font-size: 0.8rem;
 }
 
+.toggle {
+  display: none;
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #0366d6;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
 @media (max-width: 640px) {
   .icon {
     width: 48px;
     height: 48px;
+  }
+  /* スマホではデフォルトでプロフィール文を折りたたむ（3行） */
+  .profile {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  .toggle {
+    display: inline-block;
+  }
+  /* 展開時は折りたたみ解除 */
+  .expanded .profile {
+    -webkit-line-clamp: unset;
+    display: block;
+    overflow: visible;
   }
 }
