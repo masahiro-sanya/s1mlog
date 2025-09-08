@@ -36,12 +36,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   });
 
   return {
-    title: data.title,
-    description: data.description,
+    title: data.title || '記事',
+    description: data.description || undefined,
     openGraph: {
-      title: data.title,
-      description: data.description,
-      images: [data?.thumbnail?.url || ''],
+      title: data.title || '記事',
+      description: data.description || undefined,
+      images: data?.thumbnail?.url ? [data.thumbnail.url] : undefined,
     },
   };
 }
