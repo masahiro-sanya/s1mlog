@@ -50,8 +50,12 @@ export default async function RootLayout({ children }: Props) {
       <body>
         <Header />
         <Nav tags={tags?.contents || []} />
-        <Profile writer={writer} />
-        <main className={styles.main}>{children}</main>
+        <div className={styles.container}>
+          <aside className={styles.sidebar}>
+            <Profile writer={writer} />
+          </aside>
+          <main className={styles.main}>{children}</main>
+        </div>
         <Footer />
       </body>
     </html>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from 'react';
 import styles from './index.module.css';
 import { Writer } from '@/libs/microcms';
 
@@ -6,11 +9,12 @@ type Props = {
 };
 
 export default function Profile({ writer }: Props) {
+  const [expanded, setExpanded] = useState(false);
   if (!writer) {
     return null;
   }
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${expanded ? styles.expanded : ''}`}>
       {writer.image ? (
         <picture>
           <source
@@ -31,6 +35,14 @@ export default function Profile({ writer }: Props) {
       <div className={styles.content}>
         <p className={styles.name}>{writer.name}</p>
         <p className={styles.profile}>{writer.profile}</p>
+        <button
+          type="button"
+          className={styles.toggle}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+        >
+          {expanded ? '閉じる' : 'もっと読む'}
+        </button>
       </div>
     </div>
   );
