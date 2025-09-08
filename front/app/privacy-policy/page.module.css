@@ -1,0 +1,27 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  line-height: 1.8;
+}
+
+.title {
+  font-size: 1.6rem;
+  margin: 0 0 16px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  margin: 24px 0 8px;
+}
+
+.list {
+  padding-left: 20px;
+}
+
+.updatedAt {
+  margin-top: 24px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
