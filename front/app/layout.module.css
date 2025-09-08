@@ -1,6 +1,7 @@
 .main {
   width: 720px;
   margin: 0 auto;
+  flex: 1;
 }
 
 @media (max-width: 640px) {
