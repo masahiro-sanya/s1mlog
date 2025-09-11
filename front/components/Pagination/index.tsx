@@ -12,7 +12,6 @@ type Props = {
 export default function Pagination({ totalCount, current = 1, basePath = '', q }: Props) {
   const pages = Array.from({ length: Math.ceil(totalCount / LIMIT) }).map((_, i) => i + 1);
   
-  // 検索ページの場合はクエリパラメータを使用
   const isSearchPage = basePath === '/search';
   
   return (
@@ -20,14 +19,12 @@ export default function Pagination({ totalCount, current = 1, basePath = '', q }
       {pages.map((p) => (
         <li className={styles.list} key={p}>
           {current !== p ? (
-            <Link 
+            <Link
               href={
-                isSearchPage 
-                  ? `${basePath}?page=${p}${q ? `&q=${q}` : ''}`
-                  : p === 1 
-                    ? basePath || '/'
-                    : `${basePath}/p/${p}${q ? `?q=${q}` : ''}`
-              } 
+                isSearchPage
+                  ? `${basePath}/p/${p}${q ? `?q=${encodeURIComponent(q)}` : ''}`
+                  : `${basePath || ''}/p/${p}`
+              }
               className={styles.item}
             >
               {p}

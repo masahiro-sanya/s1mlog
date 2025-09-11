@@ -3,12 +3,8 @@ import { getDetail, getList, type Article as ArticleType } from '@/libs/microcms
 import Article from '@/components/Article';
 
 type Props = {
-  params: Promise<{
-    slug: string;
-  }>;
-  searchParams: Promise<{
-    dk?: string;
-  }>;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ dk?: string; draftKey?: string }>;
 };
 
 export const revalidate = 60;
@@ -31,9 +27,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const data = await getDetail(resolvedParams.slug, {
-    draftKey: resolvedSearchParams.dk,
-  });
+  const draftKey = resolvedSearchParams.draftKey || resolvedSearchParams.dk;
+  const data = await getDetail(resolvedParams.slug, { draftKey });
 
   return {
     title: data.title || '記事',
@@ -49,9 +44,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function Page({ params, searchParams }: Props) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const data = await getDetail(resolvedParams.slug, {
-    draftKey: resolvedSearchParams.dk,
-  });
+  const draftKey = resolvedSearchParams.draftKey || resolvedSearchParams.dk;
+  const data = await getDetail(resolvedParams.slug, { draftKey });
 
   return <Article data={data} />;
 }
