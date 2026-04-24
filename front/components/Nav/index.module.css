@@ -3,6 +3,16 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  padding: 0 24px 24px;
+  gap: 16px;
+  padding: 24px 24px 8px;
+  width: 100%;
+  max-width: var(--layout-max);
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .nav {
+    gap: 12px;
+    padding: 16px 16px 4px;
+  }
 }

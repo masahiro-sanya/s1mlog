@@ -1,18 +1,28 @@
 .container {
   display: flex;
-  height: 75vh;
+  flex-direction: column;
+  height: 70vh;
   align-items: center;
   justify-content: center;
+  gap: 12px;
+  padding: 24px;
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   text-align: center;
-  font-weight: bold;
-  font-family: 'system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .text {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   text-align: center;
+  color: var(--color-text-sub);
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.3rem;
+  }
 }

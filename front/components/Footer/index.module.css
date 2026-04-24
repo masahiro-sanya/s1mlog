@@ -1,20 +1,37 @@
 .footer {
-  padding: 16px 24px;
+  padding: 32px 24px;
   text-align: center;
-  color: var(--color-text-main);
+  color: var(--color-text-sub);
   font-size: 0.8rem;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
+  background-color: var(--color-bg-main);
+  border-top: 1px solid var(--color-border-light);
 }
 
 .links {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.links a {
+  padding: 4px 2px;
 }
 
 .sep {
-  color: #aaa;
+  color: var(--color-text-muted);
+}
+
+.cr {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 24px 16px;
+  }
 }
