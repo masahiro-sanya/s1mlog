@@ -46,5 +46,8 @@ CLAUDE.md
 # Serena MCP Server
 .serena/
 
+# MCP config (may reference secrets via env)
+.mcp.json
+
 # user-requested ignore
 AGENTS.md
