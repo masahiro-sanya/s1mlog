@@ -15,7 +15,7 @@ export const revalidate = 60;
 export default async function Page({ searchParams }: Props) {
   const resolvedSearchParams = await searchParams;
   const page = parseInt(resolvedSearchParams.page || '1', 10);
-  
+
   const data = await getList({
     q: resolvedSearchParams.q,
     limit: LIMIT,
@@ -25,11 +25,11 @@ export default async function Page({ searchParams }: Props) {
   return (
     <>
       <ArticleList articles={data.contents} />
-      <Pagination 
-        totalCount={data.totalCount} 
+      <Pagination
+        totalCount={data.totalCount}
         current={page}
-        basePath="/search" 
-        q={resolvedSearchParams.q} 
+        basePath="/search"
+        q={resolvedSearchParams.q}
       />
     </>
   );

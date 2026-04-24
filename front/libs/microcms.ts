@@ -33,14 +33,13 @@ export type Blog = {
 
 export type Article = Blog & MicroCMSContentId & MicroCMSDate;
 
-
-
 // Initialize Client SDK.
 // ビルド時のチェック - Vercelビルド時は環境変数がない可能性がある
-const isValidConfig = process.env.MICROCMS_SERVICE_DOMAIN && 
-                     process.env.MICROCMS_API_KEY &&
-                     process.env.MICROCMS_SERVICE_DOMAIN !== 'dummy' &&
-                     process.env.MICROCMS_API_KEY !== 'dummy';
+const isValidConfig =
+  process.env.MICROCMS_SERVICE_DOMAIN &&
+  process.env.MICROCMS_API_KEY &&
+  process.env.MICROCMS_SERVICE_DOMAIN !== 'dummy' &&
+  process.env.MICROCMS_API_KEY !== 'dummy';
 
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN || 'dummy';
 const apiKey = process.env.MICROCMS_API_KEY || 'dummy';
@@ -49,22 +48,28 @@ if (!isValidConfig) {
   console.warn('MicroCMS credentials not configured. Using dummy values for build.');
 }
 
-export const client = isValidConfig ? createClient({
-  serviceDomain,
-  apiKey,
-}) : createClient({
-  serviceDomain: 'dummy',
-  apiKey: 'dummy',
-});
+export const client = isValidConfig
+  ? createClient({
+      serviceDomain,
+      apiKey,
+    })
+  : createClient({
+      serviceDomain: 'dummy',
+      apiKey: 'dummy',
+    });
 
 // ブログ一覧を取得
 export const getList = async (queries?: MicroCMSQueries) => {
   // APIキーが設定されていない場合は空のデータを返す
-  if (!process.env.MICROCMS_SERVICE_DOMAIN || !process.env.MICROCMS_API_KEY ||
-      process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' || process.env.MICROCMS_API_KEY === 'dummy') {
+  if (
+    !process.env.MICROCMS_SERVICE_DOMAIN ||
+    !process.env.MICROCMS_API_KEY ||
+    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
+    process.env.MICROCMS_API_KEY === 'dummy'
+  ) {
     return { contents: [], totalCount: 0, offset: 0, limit: 0 };
   }
-  
+
   try {
     const listData = await client.getList<Blog>({
       endpoint: 'blog',
@@ -80,11 +85,15 @@ export const getList = async (queries?: MicroCMSQueries) => {
 // ブログの詳細を取得
 export const getDetail = async (contentId: string, queries?: MicroCMSQueries) => {
   // APIキーが設定されていない場合
-  if (!process.env.MICROCMS_SERVICE_DOMAIN || !process.env.MICROCMS_API_KEY ||
-      process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' || process.env.MICROCMS_API_KEY === 'dummy') {
+  if (
+    !process.env.MICROCMS_SERVICE_DOMAIN ||
+    !process.env.MICROCMS_API_KEY ||
+    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
+    process.env.MICROCMS_API_KEY === 'dummy'
+  ) {
     notFound();
   }
-  
+
   try {
     const detailData = await client.getListDetail<Blog>({
       endpoint: 'blog',
@@ -101,11 +110,15 @@ export const getDetail = async (contentId: string, queries?: MicroCMSQueries) =>
 // タグの一覧を取得
 export const getTagList = async (queries?: MicroCMSQueries) => {
   // APIキーが設定されていない場合は空のデータを返す
-  if (!process.env.MICROCMS_SERVICE_DOMAIN || !process.env.MICROCMS_API_KEY ||
-      process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' || process.env.MICROCMS_API_KEY === 'dummy') {
+  if (
+    !process.env.MICROCMS_SERVICE_DOMAIN ||
+    !process.env.MICROCMS_API_KEY ||
+    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
+    process.env.MICROCMS_API_KEY === 'dummy'
+  ) {
     return { contents: [], totalCount: 0, offset: 0, limit: 0 };
   }
-  
+
   try {
     const listData = await client.getList<Tag>({
       endpoint: 'tags',
@@ -120,11 +133,15 @@ export const getTagList = async (queries?: MicroCMSQueries) => {
 
 // タグの詳細を取得
 export const getTag = async (contentId: string, queries?: MicroCMSQueries) => {
-  if (!process.env.MICROCMS_SERVICE_DOMAIN || !process.env.MICROCMS_API_KEY ||
-      process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' || process.env.MICROCMS_API_KEY === 'dummy') {
+  if (
+    !process.env.MICROCMS_SERVICE_DOMAIN ||
+    !process.env.MICROCMS_API_KEY ||
+    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
+    process.env.MICROCMS_API_KEY === 'dummy'
+  ) {
     notFound();
   }
-  
+
   try {
     const detailData = await client.getListDetail<Tag>({
       endpoint: 'tags',
@@ -139,8 +156,12 @@ export const getTag = async (contentId: string, queries?: MicroCMSQueries) => {
 };
 
 export const getWriter = async () => {
-  if (!process.env.MICROCMS_SERVICE_DOMAIN || !process.env.MICROCMS_API_KEY ||
-      process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' || process.env.MICROCMS_API_KEY === 'dummy') {
+  if (
+    !process.env.MICROCMS_SERVICE_DOMAIN ||
+    !process.env.MICROCMS_API_KEY ||
+    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
+    process.env.MICROCMS_API_KEY === 'dummy'
+  ) {
     return {
       id: 'default',
       name: 'Default Writer',
@@ -150,7 +171,7 @@ export const getWriter = async () => {
       publishedAt: '',
     };
   }
-  
+
   try {
     const writerData = await client.get({
       endpoint: 'writers',

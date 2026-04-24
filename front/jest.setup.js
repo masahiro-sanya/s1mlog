@@ -17,7 +17,7 @@ jest.mock('cheerio', () => {
               // テスト用のダミーエレメント
               const element = {
                 attribs: { class: 'language-javascript' },
-                children: [{ data: "const test = 'hello';" }]
+                children: [{ data: "const test = 'hello';" }],
               };
               callback(0, element);
             }
@@ -39,17 +39,16 @@ jest.mock('cheerio', () => {
         };
         return result;
       };
-      
+
       // $.html()メソッド
       $.html = jest.fn(() => html);
-      
+
       return $;
     }),
   };
-  
+
   return cheerio;
 });
-
 
 // Next.js Imageコンポーネントのモック
 jest.mock('next/image', () => ({
@@ -58,9 +57,9 @@ jest.mock('next/image', () => ({
     // priority属性はbooleanではなく文字列として扱う
     const imgProps = {
       ...props,
-      ...(priority && { priority: priority.toString() })
+      ...(priority && { priority: priority.toString() }),
     };
-    // eslint-disable-next-line jsx-a11y/alt-text
+    // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
     return <img {...imgProps} />;
   },
 }));

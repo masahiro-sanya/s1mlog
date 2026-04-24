@@ -37,13 +37,13 @@ test.describe('ホームページ', () => {
     // 最初の記事リンクを探す
     const firstArticleLink = page.locator('article a').first();
     const articleTitle = await firstArticleLink.textContent();
-    
+
     // 記事をクリック
     await firstArticleLink.click();
-    
+
     // URLが記事詳細ページになっている
     await expect(page).toHaveURL(/\/articles\/.+/);
-    
+
     // 記事タイトルが表示されている
     if (articleTitle) {
       await expect(page.locator('h1')).toContainText(articleTitle);
@@ -53,16 +53,16 @@ test.describe('ホームページ', () => {
   test('タグをクリックするとタグページに遷移する', async ({ page }) => {
     // タグリンクを探す
     const tagLink = page.locator('a[href^="/tags/"]').first();
-    
+
     // タグが存在する場合のみテスト
     const tagCount = await tagLink.count();
     if (tagCount > 0) {
       const tagName = await tagLink.textContent();
       await tagLink.click();
-      
+
       // URLがタグページになっている
       await expect(page).toHaveURL(/\/tags\/.+/);
-      
+
       // タグ名が表示されている
       if (tagName) {
         await expect(page.locator('h1')).toContainText(tagName);
@@ -76,11 +76,11 @@ test.describe('レスポンシブデザイン', () => {
     // モバイルビューポートを設定
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
-    
+
     // ヘッダーが表示される
     const header = page.locator('header');
     await expect(header).toBeVisible();
-    
+
     // 記事リストが表示される
     const articleList = page.locator('ul').first();
     await expect(articleList).toBeVisible();
@@ -90,7 +90,7 @@ test.describe('レスポンシブデザイン', () => {
     // タブレットビューポートを設定
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
-    
+
     // メインコンテンツが表示される
     const main = page.locator('main');
     await expect(main).toBeVisible();

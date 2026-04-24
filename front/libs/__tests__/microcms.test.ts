@@ -5,7 +5,7 @@ jest.mock('microcms-js-sdk', () => {
   const mockGetList = jest.fn();
   const mockGetListDetail = jest.fn();
   const mockGet = jest.fn();
-  
+
   return {
     createClient: jest.fn(() => ({
       getList: mockGetList,
@@ -51,7 +51,7 @@ describe('microCMS API', () => {
       mockClient.getList.mockResolvedValue(mockData);
 
       const result = await getList();
-      
+
       expect(mockClient.getList).toHaveBeenCalledWith({
         endpoint: 'blog',
         queries: undefined,
@@ -78,10 +78,7 @@ describe('microCMS API', () => {
 
       const result = await getList();
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error fetching blog list:',
-        expect.any(Error),
-      );
+      expect(console.error).toHaveBeenCalledWith('Error fetching blog list:', expect.any(Error));
       expect(result).toEqual({
         contents: [],
         totalCount: 0,
@@ -156,10 +153,7 @@ describe('microCMS API', () => {
 
       const result = await getTagList();
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error fetching tag list:',
-        expect.any(Error),
-      );
+      expect(console.error).toHaveBeenCalledWith('Error fetching tag list:', expect.any(Error));
       expect(result).toEqual({
         contents: [],
         totalCount: 0,
@@ -230,10 +224,7 @@ describe('microCMS API', () => {
 
       const result = await getWriter();
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error fetching writers:',
-        expect.any(Error),
-      );
+      expect(console.error).toHaveBeenCalledWith('Error fetching writers:', expect.any(Error));
       expect(result).toEqual({
         id: 'default',
         name: 'Default Writer',

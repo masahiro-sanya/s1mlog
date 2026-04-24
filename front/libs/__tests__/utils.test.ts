@@ -36,10 +36,7 @@ describe('formatDate', () => {
     const invalidDate = 'invalid-date';
     const result = formatDate(invalidDate);
     expect(result).toBe('');
-    expect(console.error).toHaveBeenCalledWith(
-      'Error formatting date:',
-      expect.any(Error),
-    );
+    expect(console.error).toHaveBeenCalledWith('Error formatting date:', expect.any(Error));
   });
 
   it('異なる日付フォーマットも処理できる', () => {
@@ -80,7 +77,7 @@ describe('formatRichText', () => {
     const result = formatRichText(html);
     // cheerioモックでは元のHTMLが返される
     expect(result).toBe(html);
-    
+
     // highlight.jsのモック関数をインポート
     const hljs = require('highlight.js');
     // ハイライト処理が実行されているかテスト（実際にはcheerioモックで処理がスキップされる）
@@ -94,7 +91,7 @@ describe('formatRichText', () => {
     const result = formatRichText(html);
     // cheerioモックでは元のHTMLが返される
     expect(result).toBe(html);
-    
+
     // const hljs = require('highlight.js');
     // expect(hljs.highlight).toHaveBeenCalled();
   });

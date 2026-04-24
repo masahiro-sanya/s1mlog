@@ -16,15 +16,15 @@ export async function generateStaticParams() {
   try {
     const tagList = await getTagList();
     const paths = [];
-    
+
     for (const tag of tagList.contents) {
       const data = await getList({
         limit: 1,
         filters: `tags[contains]${tag.id}`,
       });
-      
+
       const pageCount = Math.ceil(data.totalCount / LIMIT);
-      
+
       for (let i = 2; i <= pageCount; i++) {
         paths.push({
           tagId: tag.id,
@@ -32,7 +32,7 @@ export async function generateStaticParams() {
         });
       }
     }
-    
+
     return paths;
   } catch (error) {
     console.error('Error generating static params for tag pages:', error);

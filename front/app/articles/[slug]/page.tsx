@@ -12,7 +12,7 @@ export const revalidate = 60;
 export async function generateStaticParams() {
   try {
     const { contents } = await getList();
-    
+
     const paths = contents.map((post: ArticleType) => ({
       slug: post.id,
     }));

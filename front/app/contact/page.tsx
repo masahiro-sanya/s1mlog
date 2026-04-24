@@ -19,7 +19,8 @@ export default function ContactPage() {
       </p>
       {!contactEmail && (
         <p className={styles.note}>
-          管理者向け: `.env` に `NEXT_PUBLIC_CONTACT_EMAIL` を設定すると、メール送信リンクが有効になります。
+          管理者向け: `.env` に `NEXT_PUBLIC_CONTACT_EMAIL`
+          を設定すると、メール送信リンクが有効になります。
         </p>
       )}
       <ContactForm contactEmail={contactEmail} />
