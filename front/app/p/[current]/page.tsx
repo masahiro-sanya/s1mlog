@@ -16,16 +16,16 @@ export async function generateStaticParams() {
     const data = await getList({
       limit: 1,
     });
-    
+
     const pageCount = Math.ceil(data.totalCount / LIMIT);
     const paths = [];
-    
+
     for (let i = 2; i <= pageCount; i++) {
       paths.push({
         current: i.toString(),
       });
     }
-    
+
     return paths;
   } catch (error) {
     console.error('Error generating static params for pagination:', error);

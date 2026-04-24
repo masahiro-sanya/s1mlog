@@ -25,31 +25,29 @@ describe('ArticleList', () => {
 
   it('記事タイトルを表示する', () => {
     render(<ArticleList articles={mockArticles} />);
-    
+
     expect(screen.getByText('First Article')).toBeInTheDocument();
   });
 
   it('記事へのリンクを生成する', () => {
     render(<ArticleList articles={mockArticles} />);
-    
+
     const links = screen.getAllByRole('link');
-    const articleLink = links.find(link => 
-      link.getAttribute('href') === '/articles/1'
-    );
-    
+    const articleLink = links.find((link) => link.getAttribute('href') === '/articles/1');
+
     expect(articleLink).toBeDefined();
   });
 
   it('日付を表示する', () => {
     render(<ArticleList articles={mockArticles} />);
-    
+
     // 日付がフォーマットされて表示される
     expect(screen.getByText('1 January, 2024')).toBeInTheDocument();
   });
 
   it('空の記事リストを処理できる', () => {
     render(<ArticleList articles={[]} />);
-    
+
     // 空のリストの場合は「記事がありません。」が表示される
     expect(screen.getByText('記事がありません。')).toBeInTheDocument();
   });
@@ -64,9 +62,9 @@ describe('ArticleList', () => {
         createdAt: '2024-01-02T00:00:00.000Z',
       },
     ];
-    
+
     render(<ArticleList articles={multipleArticles} />);
-    
+
     expect(screen.getByText('First Article')).toBeInTheDocument();
     expect(screen.getByText('Second Article')).toBeInTheDocument();
   });

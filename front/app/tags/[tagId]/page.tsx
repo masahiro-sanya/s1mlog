@@ -14,7 +14,7 @@ export const revalidate = 60;
 export async function generateStaticParams() {
   try {
     const { contents } = await getTagList();
-    
+
     const paths = contents.map((tag: Tag) => ({
       tagId: tag.id,
     }));
