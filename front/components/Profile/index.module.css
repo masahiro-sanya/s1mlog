@@ -1,17 +1,18 @@
 .wrapper {
   display: flex;
-  gap: 14px;
-  padding: 16px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
   background: linear-gradient(135deg, var(--color-accent-softer) 0%, var(--color-bg-sub) 100%);
   border: 1px solid var(--color-accent-border);
   border-radius: var(--border-radius-lg);
-  align-items: flex-start;
 }
 
 .icon {
   display: block;
-  width: 48px;
-  height: 48px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -21,22 +22,24 @@
 }
 
 .content {
-  flex: 1;
+  width: 100%;
   min-width: 0;
+  text-align: center;
 }
 
 .name {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.4;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
   color: var(--color-text-main);
 }
 
 .profile {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--color-text-sub);
-  line-height: 1.65;
+  line-height: 1.7;
+  text-align: left;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -51,8 +54,8 @@
 
 .toggle {
   display: inline-block;
-  margin-top: 6px;
-  font-size: 0.78rem;
+  margin-top: 8px;
+  font-size: 0.82rem;
   color: var(--color-accent);
   background: transparent;
   border: none;
@@ -64,4 +67,22 @@
 .toggle:hover {
   color: var(--color-accent-hover);
   text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .wrapper {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 18px;
+    max-width: 560px;
+  }
+  .icon {
+    width: 64px;
+    height: 64px;
+  }
+  .content {
+    text-align: left;
+    flex: 1;
+  }
 }
