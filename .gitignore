@@ -51,3 +51,6 @@ CLAUDE.md
 
 # user-requested ignore
 AGENTS.md
+
+# local-only docs (blog ideas, drafts, etc.) — git管理対象外
+/localdocs/

@@ -1,4 +1,5 @@
-import { getList, getTagList, type Tag } from '@/libs/microcms';
+import type { Metadata } from 'next';
+import { getList, getTag, getTagList, type Tag } from '@/libs/microcms';
 import { LIMIT } from '@/constants';
 import Pagination from '@/components/Pagination';
 import ArticleList from '@/components/ArticleList';
@@ -10,6 +11,20 @@ type Props = {
 };
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { tagId } = await params;
+  try {
+    const tag = await getTag(tagId);
+    return {
+      title: `${tag.name} の記事一覧`,
+      description: `${tag.name} に関する記事一覧。`,
+      alternates: { canonical: `/tags/${tagId}` },
+    };
+  } catch {
+    return { alternates: { canonical: `/tags/${tagId}` } };
+  }
+}
 
 export async function generateStaticParams() {
   try {

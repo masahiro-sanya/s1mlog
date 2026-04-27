@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getList, getTagList } from '@/libs/microcms';
 import { LIMIT } from '@/constants';
 import Pagination from '@/components/Pagination';
@@ -11,6 +12,15 @@ type Props = {
 };
 
 export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { tagId, current } = await params;
+  return {
+    title: `${current}ページ目`,
+    alternates: { canonical: `/tags/${tagId}/p/${current}` },
+    robots: { index: false, follow: true },
+  };
+}
 
 export async function generateStaticParams() {
   try {

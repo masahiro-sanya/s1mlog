@@ -10,6 +10,8 @@ export default function Footer() {
         <Link href="/privacy-policy">プライバシーポリシー</Link>
         <span className={styles.sep}>/</span>
         <Link href="/contact">お問い合わせ</Link>
+        <span className={styles.sep}>/</span>
+        <a href="/feed.xml">RSS</a>
       </nav>
       <p className={styles.cr}>© S1MLOG. All Rights Reserved 2024</p>
     </footer>

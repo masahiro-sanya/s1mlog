@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getList } from '@/libs/microcms';
 import ArticleList from '@/components/ArticleList';
 import Pagination from '@/components/Pagination';
@@ -9,6 +10,11 @@ type Props = {
 };
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: '検索',
+  robots: { index: false, follow: true },
+};
 
 export default async function Page({ params, searchParams }: Props) {
   const { current } = await params;

@@ -1,0 +1,39 @@
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  color: #111;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
+.btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.x {
+  border-color: #111;
+}
+
+.hatena {
+  color: #00a4de;
+  border-color: #00a4de;
+}
+
+.copy {
+  font-family: inherit;
+}
