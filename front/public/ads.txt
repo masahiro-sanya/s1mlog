@@ -1,0 +1,3 @@
+# Google AdSense ads.txt
+# 申請承認後、本番の publisher ID へ書き換える。
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0

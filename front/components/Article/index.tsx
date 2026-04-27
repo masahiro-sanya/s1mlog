@@ -1,6 +1,7 @@
 import { formatRichText } from '@/libs/utils';
 import { type Article } from '@/libs/microcms';
 import PublishedDate from '../Date';
+import TableOfContents, { buildTocHtml } from '../TableOfContents';
 import styles from './index.module.css';
 import TagList from '../TagList';
 
@@ -9,15 +10,14 @@ type Props = {
 };
 
 export default function Article({ data }: Props) {
-  // data.contentの確認
   const formattedContent = data.content ? formatRichText(data.content) : '';
+  const { html, headings } = buildTocHtml(formattedContent);
 
   return (
     <main className={styles.main}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{data.title || 'Untitled'}</h1>{' '}
-        {/* タイトルが存在しない場合のデフォルト値 */}
-        <TagList tags={data.tags || []} /> {/* タグが存在しない場合、空の配列を渡す */}
+        <h1 className={styles.title}>{data.title || 'Untitled'}</h1>
+        <TagList tags={data.tags || []} />
         <p className={styles.description}>{data.description || 'No description available.'}</p>
         <div className={styles.meta}>
           {data.writer && data.writer.image && (
@@ -41,7 +41,7 @@ export default function Article({ data }: Props) {
           <PublishedDate date={data.publishedAt || data.createdAt || new Date().toISOString()} />
         </div>
       </div>
-      {data.thumbnail?.url && ( // サムネイルが存在する場合のみ表示
+      {data.thumbnail?.url && (
         <picture>
           <source
             type="image/webp"
@@ -54,14 +54,15 @@ export default function Article({ data }: Props) {
           />
           <img
             src={data.thumbnail.url}
-            alt=""
+            alt={data.title || ''}
             className={styles.thumbnail}
             width={data.thumbnail.width || 960}
             height={data.thumbnail.height || 504}
           />
         </picture>
       )}
-      <div className={styles.content} dangerouslySetInnerHTML={{ __html: formattedContent }} />
+      <TableOfContents headings={headings} />
+      <div className={styles.content} dangerouslySetInnerHTML={{ __html: html }} />
     </main>
   );
 }

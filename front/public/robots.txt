@@ -1,9 +1,12 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /search
+Disallow: /api/
 
 # Host
 Host: https://www.s1msys.com
 
 # Sitemaps
 Sitemap: https://www.s1msys.com/sitemap.xml
+Sitemap: https://www.s1msys.com/feed.xml
