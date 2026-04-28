@@ -8,10 +8,10 @@ export default function Header() {
       <Link href="/">
         <Image
           src="/logo.svg"
-          alt="test"
+          alt="s1mlog"
           className={styles.logo}
-          width={348}
-          height={133}
+          width={220}
+          height={56}
           priority
         />
       </Link>

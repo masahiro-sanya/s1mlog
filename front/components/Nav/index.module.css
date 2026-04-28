@@ -3,8 +3,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px;
-  padding: 24px 24px 8px;
+  gap: 20px;
+  padding: 32px 24px 16px;
   width: 100%;
   max-width: var(--layout-max);
   margin: 0 auto;
@@ -12,7 +12,7 @@
 
 @media (max-width: 640px) {
   .nav {
-    gap: 12px;
-    padding: 16px 16px 4px;
+    gap: 14px;
+    padding: 20px 16px 8px;
   }
 }

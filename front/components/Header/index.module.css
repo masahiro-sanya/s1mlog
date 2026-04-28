@@ -5,30 +5,17 @@
   padding: 14px 32px;
   display: flex;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(250, 251, 252, 0.85);
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
-  border-bottom: 1px solid var(--color-border-light);
-  box-shadow: 0 1px 0 rgba(99, 102, 241, 0.04);
-}
-
-.header::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.45) 50%, transparent 100%);
-  opacity: 0.7;
-  pointer-events: none;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .logo {
-  height: 28px;
+  height: 32px;
   width: auto;
   display: block;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.12s ease;
 }
 
 .logo:hover {
@@ -40,6 +27,6 @@
     padding: 10px 16px;
   }
   .logo {
-    height: 22px;
+    height: 28px;
   }
 }
