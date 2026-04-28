@@ -1,15 +1,15 @@
 .search {
-  padding: 0 20px 0 44px;
+  padding: 0 16px 0 40px;
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--border-radius-lg);
   width: 100%;
   max-width: 520px;
-  height: 42px;
-  background: var(--color-bg-main) url('/search.svg') no-repeat 14px center;
+  height: 40px;
+  background: var(--color-bg-main) url('/search.svg') no-repeat 12px center;
   background-size: 16px 16px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--color-text-main);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .search::placeholder {
@@ -23,13 +23,13 @@
 .search:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+  box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.16);
 }
 
 @media (max-width: 640px) {
   .search {
-    height: 40px;
+    height: 38px;
     max-width: 100%;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
 }

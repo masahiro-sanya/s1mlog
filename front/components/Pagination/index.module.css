@@ -37,15 +37,15 @@ a.item:hover {
 }
 
 .current {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  background-color: var(--color-text-main);
   color: var(--color-bg-main);
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
 }
 
 a.current:hover,
 .current:hover {
   color: var(--color-bg-main);
+  background-color: var(--color-text-main);
 }
 
 @media (max-width: 640px) {

@@ -8,36 +8,27 @@
 
 .link {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 200px 1fr;
   gap: 28px;
-  padding: 24px 16px;
-  margin: 0 -16px;
+  padding: 28px 0;
   align-items: start;
-  border-radius: var(--border-radius-lg);
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: opacity 0.12s ease;
 }
 
 .link:hover {
   color: inherit;
-  background-color: var(--color-bg-sub);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
 }
 
 .link:hover .title {
   color: var(--color-accent);
 }
 
-.link:hover .image {
-  transform: scale(1.03);
-}
-
 .imageWrap {
   overflow: hidden;
-  border-radius: var(--border-radius-lg);
-  background-color: var(--color-bg-sub);
+  border-radius: var(--border-radius);
+  background-color: var(--color-bg-main);
   aspect-ratio: 16 / 9;
-  box-shadow: inset 0 0 0 1px var(--color-border-light);
+  border: 1px solid var(--color-border-light);
 }
 
 .image {
@@ -45,27 +36,31 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.35s ease;
+  transition: transform 0.4s ease;
+}
+
+.link:hover .image {
+  transform: scale(1.02);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
 .title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  line-height: 1.5;
+  font-size: 1.18rem;
+  font-weight: 600;
+  line-height: 1.45;
   color: var(--color-text-main);
-  transition: color 0.15s ease;
+  transition: color 0.12s ease;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  letter-spacing: -0.005em;
+  letter-spacing: -0.015em;
 }
 
 .tagRow {
@@ -77,21 +72,18 @@
 }
 
 .date {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--color-text-sub);
   margin: 0;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 640px) {
   .link {
     grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 16px 12px;
-    margin: 0 -12px;
-  }
-
-  .link:hover {
-    transform: none;
+    gap: 14px;
+    padding: 20px 0;
   }
 
   .title {
