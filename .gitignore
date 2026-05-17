@@ -57,3 +57,6 @@ AGENTS.md
 
 # local-only docs (blog ideas, drafts, etc.) — git管理対象外
 /localdocs/
+
+# article assets (thumbnail HTML/PNG generation) — local-only
+.article-assets/
