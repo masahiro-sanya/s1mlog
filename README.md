@@ -76,6 +76,7 @@ npm install
 cat > .env << EOF
 MICROCMS_API_KEY=your_api_key_here
 MICROCMS_SERVICE_DOMAIN=your_domain_here
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 BASE_URL=http://localhost:3000
 EOF
 
@@ -99,12 +100,72 @@ npm run dev
 5. 環境変数を設定：
    - `MICROCMS_API_KEY`: microCMS APIキー
    - `MICROCMS_SERVICE_DOMAIN`: microCMSサービスドメイン
-   - `BASE_URL`: デプロイ後のURL（例: https://your-app.vercel.app）
+   - `NEXT_PUBLIC_SITE_URL`: デプロイ後の公開URL（例: https://www.s1msys.com）。OGP / canonical / sitemap / feed.xml の絶対URL用
+   - `NEXT_PUBLIC_CONTACT_EMAIL`: お問い合わせフォームの mailto: 先メールアドレス
+   - （任意）`NEXT_PUBLIC_GA_MEASUREMENT_ID` / `NEXT_PUBLIC_SITE_TWITTER`
+   - （AdSense 用・任意）`NEXT_PUBLIC_ADSENSE_CLIENT`, `NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP`, `NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_MID`, `NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_BOTTOM`, `NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR`
+
+> `BASE_URL` は Playwright / Jest 用のテスト変数。Vercel 側に設定する必要はない。
+> AdSense 環境変数は未設定時は枠自体がレンダリングされない（null）安全設計。承認前は未設定のままで構わない。
 
 ##### 自動デプロイ
 - `main`ブランチへのpushで本番環境に自動デプロイ
 - `develop`ブランチへのpushでプレビュー環境に自動デプロイ
 - Pull Requestごとにプレビュー環境が作成
+
+##### microCMS → Vercel Webhook 連携
+`output: 'export'` の静的サイト構成のため、microCMS で記事を公開しただけではサイトに反映されない。以下を一度設定すれば、microCMS 側の公開/更新/削除を契機に Vercel が自動再ビルドする。
+
+1. **Vercel: Deploy Hook を発行**
+   - Vercel ダッシュボード → 該当プロジェクト → Settings → Git → "Deploy Hooks"
+   - Name: `microcms-content-published`、Branch: `main`（プレビューも回したい場合は `develop` 用も別途作成）
+   - 発行された URL（例: `https://api.vercel.com/v1/integrations/deploy/prj_xxx/yyy`）をコピー
+2. **microCMS: Webhook を登録**
+   - microCMS 管理画面 → `blog` API → API 設定 → Webhook → 「追加」
+   - サービスは「Vercel」または「カスタム通知」を選択し、上記 URL を貼り付け
+   - 通知タイミング: 公開 / 公開終了 / 公開中の更新 / 削除 をすべて有効化
+3. **動作確認**
+   - microCMS で任意の記事を再公開 → Vercel Deployments に新規ビルドが流れることを確認
+
+> Deploy Hook URL はトークン相当の機密。リポジトリにコミットせず、Vercel/microCMS 両側のダッシュボードでのみ管理する。
+
+## 💰 収益化（Google AdSense）
+
+### 申請前チェックリスト
+
+- [ ] プライバシーポリシー（`/privacy-policy`）が公開済み
+- [ ] アフィリエイト開示（`/disclosure`）が公開済み
+- [ ] お問い合わせ（`/contact`）が機能している（`NEXT_PUBLIC_CONTACT_EMAIL` を設定済み）
+- [ ] オリジナル記事が5〜10本以上公開済み
+- [ ] サイトマップ（`/sitemap.xml`）が Search Console に登録済み
+
+### AdSense 承認後の作業
+
+1. **`ads.txt` の作成**
+   - リポジトリには placeholder を置かない（誤って配信エラーを増やすため）
+   - 承認後、AdSense ダッシュボード「サイト > ads.txt の取得」から正しい1行を取得し、`front/public/ads.txt` に配置:
+     ```
+     google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+     ```
+   - 複数事業者を使う場合は1行ずつ追記
+2. **広告ユニットの作成と環境変数設定**
+   - AdSense ダッシュボード → 広告ユニット で4つ作成し、各 slot ID を Vercel 環境変数に設定:
+     - `NEXT_PUBLIC_ADSENSE_CLIENT` … 例 `ca-pub-XXXXXXXXXXXXXXXX`
+     - `NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP` … 記事冒頭（ディスプレイ）
+     - `NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_MID` … 記事中盤（インフィード/インアーティクル推奨）
+     - `NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_BOTTOM` … 記事末尾（ディスプレイ）
+     - `NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR` … サイドバー（PCのみ表示）
+3. **Vercel で再ビルド**
+   - microCMS Webhook 経由 or `main` への空コミット push で再デプロイ
+4. **動作確認**
+   - 記事ページで4ヶ所すべてに広告が描画されること
+   - サイドバー枠はモバイル幅で非表示になっていること（CLS と AdSense ポリシー対策）
+
+### ステマ規制対応
+
+- 全記事に `PR` 開示バッジが冒頭に表示される（`components/PRDisclosure`）
+- 本文内の Amazon・楽天・主要ASPドメインへのリンクには `rel="sponsored nofollow noopener"` が自動付与される（`libs/utils.ts:isAffiliateUrl`）
+- 対応ドメイン追加は `AFFILIATE_HOST_PATTERNS` 配列を更新する
 
 ## 🚀 デプロイ
 
@@ -217,8 +278,8 @@ Vercelの機能により最適化：
 
 | 環境 | ブランチ | URL |
 |-----|---------|-----|
-| 本番 | main | https://your-app.vercel.app |
-| プレビュー | develop | https://your-app-preview.vercel.app |
+| 本番 | main | https://www.s1msys.com |
+| プレビュー | develop | Vercel が発行するプレビューURL |
 | PR | feature/* | 自動生成されるプレビューURL |
 
 ## 📚 詳細ドキュメント

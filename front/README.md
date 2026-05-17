@@ -15,7 +15,8 @@ Node.js 18 以上
 ```
 MICROCMS_API_KEY=xxxxxxxxxx
 MICROCMS_SERVICE_DOMAIN=xxxxxxxxxx
-BASE_URL=xxxxxxxxxx
+NEXT_PUBLIC_SITE_URL=https://www.s1msys.com
+BASE_URL=http://localhost:3000
 ```
 
 `MICROCMS_API_KEY`  
@@ -24,12 +25,16 @@ microCMS 管理画面の「サービス設定 > API キー」から確認する�
 `MICROCMS_SERVICE_DOMAIN`  
 microCMS 管理画面の URL（https://xxxxxxxx.microcms.io）の xxxxxxxx の部分です。
 
-`BASE_URL`
-デプロイ先の URL です。プロトコルから記載してください。
+`NEXT_PUBLIC_SITE_URL`  
+サイトの公開URL。OGP / canonical / sitemap / feed.xml の絶対URLとして使われます。
+未設定の場合は `front/constants/index.ts` の `SITE_URL` デフォルト値 `https://www.s1msys.com` にフォールバックします。
 
 例）  
 開発環境 → http://localhost:3000  
-本番環境（Vercel） → https://your-app.vercel.app
+本番環境（Vercel） → https://www.s1msys.com
+
+`BASE_URL`  
+Playwright (E2E) / Jest setup でのみ使用されるベースURL。本番ランタイムには影響しません。
 
 ## 開発の仕方
 
@@ -78,7 +83,10 @@ npm run test:coverage # カバレッジレポート付きテスト
 Vercelのプロジェクト設定で以下の環境変数を追加：
 - `MICROCMS_API_KEY`
 - `MICROCMS_SERVICE_DOMAIN`
-- `BASE_URL`
+- `NEXT_PUBLIC_SITE_URL`（本番公開URL）
+- （任意）`NEXT_PUBLIC_GA_MEASUREMENT_ID` / `NEXT_PUBLIC_ADSENSE_CLIENT` / `NEXT_PUBLIC_SITE_TWITTER`
+
+> `BASE_URL` は E2E / テストでのみ参照されるため Vercel には不要です。
 
 ### 自動デプロイ
 

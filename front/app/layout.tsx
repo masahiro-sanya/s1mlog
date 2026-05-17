@@ -17,6 +17,9 @@ import Profile from '@/components/Profile';
 import JsonLd from '@/components/JsonLd';
 import CookieConsent from '@/components/CookieConsent';
 import AnalyticsListeners from '@/components/Analytics';
+import AdSlot from '@/components/AdSlot';
+
+const AD_SLOT_SIDEBAR = process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || '';
 import './globals.css';
 import styles from './layout.module.css';
 
@@ -134,6 +137,11 @@ export default async function RootLayout({ children }: Props) {
         <div className={styles.container}>
           <aside className={styles.sidebar}>
             <Profile writer={writer} />
+            {AD_SLOT_SIDEBAR && (
+              <div className={styles.sidebarAd}>
+                <AdSlot slot={AD_SLOT_SIDEBAR} format="auto" />
+              </div>
+            )}
           </aside>
           <main className={styles.main}>{children}</main>
         </div>

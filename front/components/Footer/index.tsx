@@ -9,6 +9,8 @@ export default function Footer() {
         <span className={styles.sep}>/</span>
         <Link href="/privacy-policy">プライバシーポリシー</Link>
         <span className={styles.sep}>/</span>
+        <Link href="/disclosure">アフィリエイト開示</Link>
+        <span className={styles.sep}>/</span>
         <Link href="/contact">お問い合わせ</Link>
         <span className={styles.sep}>/</span>
         <a href="/feed.xml">RSS</a>

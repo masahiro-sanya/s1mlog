@@ -2,6 +2,8 @@ import { formatRichText } from '@/libs/utils';
 import { type Article } from '@/libs/microcms';
 import PublishedDate from '../Date';
 import TableOfContents, { buildTocHtml } from '../TableOfContents';
+import AdSlot from '../AdSlot';
+import PRDisclosure from '../PRDisclosure';
 import styles from './index.module.css';
 import TagList from '../TagList';
 
@@ -9,9 +11,14 @@ type Props = {
   data: Article;
 };
 
+const AD_SLOT_ARTICLE_TOP = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP || '';
+const AD_SLOT_ARTICLE_MID = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_MID || '';
+const AD_SLOT_ARTICLE_BOTTOM = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_BOTTOM || '';
+
 export default function Article({ data }: Props) {
   const formattedContent = data.content ? formatRichText(data.content) : '';
-  const { html, headings } = buildTocHtml(formattedContent);
+  const { headings, firstHalfHtml, secondHalfHtml } = buildTocHtml(formattedContent);
+  const isSplit = Boolean(firstHalfHtml);
 
   return (
     <main className={styles.main}>
@@ -61,8 +68,31 @@ export default function Article({ data }: Props) {
           />
         </picture>
       )}
+      <PRDisclosure />
       <TableOfContents headings={headings} />
-      <div className={styles.content} dangerouslySetInnerHTML={{ __html: html }} />
+      {AD_SLOT_ARTICLE_TOP && (
+        <div className={styles.adSlot}>
+          <AdSlot slot={AD_SLOT_ARTICLE_TOP} format="auto" />
+        </div>
+      )}
+      {isSplit ? (
+        <>
+          <div className={styles.content} dangerouslySetInnerHTML={{ __html: firstHalfHtml }} />
+          {AD_SLOT_ARTICLE_MID && (
+            <div className={styles.adSlot}>
+              <AdSlot slot={AD_SLOT_ARTICLE_MID} format="fluid" layout="in-article" />
+            </div>
+          )}
+          <div className={styles.content} dangerouslySetInnerHTML={{ __html: secondHalfHtml }} />
+        </>
+      ) : (
+        <div className={styles.content} dangerouslySetInnerHTML={{ __html: secondHalfHtml }} />
+      )}
+      {AD_SLOT_ARTICLE_BOTTOM && (
+        <div className={styles.adSlot}>
+          <AdSlot slot={AD_SLOT_ARTICLE_BOTTOM} format="auto" />
+        </div>
+      )}
     </main>
   );
 }

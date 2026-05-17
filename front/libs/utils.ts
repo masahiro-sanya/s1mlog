@@ -22,6 +22,36 @@ export const formatDate = (date: string): string => {
   }
 };
 
+// アフィリエイト判定対象のドメイン断片。判定はホスト名の含有チェックで行う（サブドメイン許容）
+const AFFILIATE_HOST_PATTERNS = [
+  'amzn.to',
+  'amazon.co.jp',
+  'amazon.com',
+  'amazon.jp',
+  'rakuten.co.jp',
+  'rakuten.ne.jp',
+  'a8.net',
+  'px.a8.net',
+  'valuecommerce.com',
+  'mkt-valuecommerce.com',
+  'moshimo.com',
+  'af.moshimo.com',
+  'linksynergy.com',
+  'click.linksynergy.com',
+  'iherb.com',
+  'tcs-asp.net', // アクセストレード
+  'felmat.net',
+];
+
+const isAffiliateUrl = (url: string): boolean => {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return AFFILIATE_HOST_PATTERNS.some((p) => host === p || host.endsWith(`.${p}`));
+  } catch {
+    return false;
+  }
+};
+
 /**
  * リッチテキストをHTML形式にフォーマットする
  * @param richText - リッチテキスト文字列
@@ -56,6 +86,19 @@ export const formatRichText = (richText: string): string => {
       const lang = $(elm).attr('class');
       const res = highlight($(elm).text(), lang);
       $(elm).html(res);
+    });
+
+    // アフィリエイト・広告系の外部リンクに rel="sponsored nofollow noopener" を自動付与し、
+    // target="_blank" も併せて付ける（景表法ステマ規制 / Google ガイドライン対応）
+    $('a[href^="http"]').each((_, elm) => {
+      const $a = $(elm);
+      const href = $a.attr('href') || '';
+      if (!isAffiliateUrl(href)) return;
+      const existingRel = ($a.attr('rel') || '').split(/\s+/).filter(Boolean);
+      const merged = Array.from(new Set([...existingRel, 'sponsored', 'nofollow', 'noopener']));
+      $a.attr('rel', merged.join(' '));
+      if (!$a.attr('target')) $a.attr('target', '_blank');
+      $a.attr('data-affiliate', 'true');
     });
 
     return $.html(); // 変更されたHTMLを返す

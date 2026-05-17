@@ -18,8 +18,10 @@ const slugify = (raw: string, fallbackIndex: number): string => {
   return base || `heading-${fallbackIndex}`;
 };
 
-export const buildTocHtml = (html: string): { html: string; headings: Heading[] } => {
-  if (!html) return { html: '', headings: [] };
+export const buildTocHtml = (
+  html: string,
+): { html: string; headings: Heading[]; firstHalfHtml: string; secondHalfHtml: string } => {
+  if (!html) return { html: '', headings: [], firstHalfHtml: '', secondHalfHtml: '' };
   const $ = cheerio.load(html);
   const headings: Heading[] = [];
   const usedIds = new Set<string>();
@@ -40,7 +42,25 @@ export const buildTocHtml = (html: string): { html: string; headings: Heading[] 
     headings.push({ id, text, level });
   });
 
-  return { html: $.html(), headings };
+  // 記事中盤に広告を挿入できるよう、本文を「中央付近の H2」で前半・後半に分割する。
+  // H2 が 2 未満の短い記事では分割しない（後半に全体を入れて前半を空にする）。
+  const h2Headings = headings.filter((h) => h.level === 2);
+  const fullHtml = $.html();
+  let firstHalfHtml = '';
+  let secondHalfHtml = fullHtml;
+
+  if (h2Headings.length >= 2) {
+    const midIndex = Math.floor(h2Headings.length / 2);
+    const splitId = h2Headings[midIndex].id;
+    const re = new RegExp(`<h2\\b[^>]*\\bid=["']${splitId}["'][^>]*>`, 'i');
+    const m = fullHtml.match(re);
+    if (m && m.index !== undefined) {
+      firstHalfHtml = fullHtml.slice(0, m.index);
+      secondHalfHtml = fullHtml.slice(m.index);
+    }
+  }
+
+  return { html: fullHtml, headings, firstHalfHtml, secondHalfHtml };
 };
 
 type Props = {
