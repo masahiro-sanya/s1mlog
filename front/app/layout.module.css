@@ -53,3 +53,16 @@
     padding: 16px 16px 40px;
   }
 }
+
+.sidebarAd {
+  margin-top: 24px;
+  width: 100%;
+  min-height: 250px;
+}
+
+/* モバイル幅ではサイドバー広告は記事下の AdSlot と被るので非表示 */
+@media (max-width: 960px) {
+  .sidebarAd {
+    display: none;
+  }
+}
