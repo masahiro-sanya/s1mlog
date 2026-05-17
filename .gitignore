@@ -46,6 +46,9 @@ CLAUDE.md
 # Serena MCP Server
 .serena/
 
+# Playwright MCP (auto-generated console logs / page snapshots)
+.playwright-mcp/
+
 # MCP config (may reference secrets via env)
 .mcp.json
 
