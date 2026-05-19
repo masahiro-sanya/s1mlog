@@ -54,7 +54,7 @@ describe('microCMS API', () => {
 
       expect(mockClient.getList).toHaveBeenCalledWith({
         endpoint: 'blog',
-        queries: undefined,
+        queries: { filters: 'publishedAt[exists]' },
       });
       expect(result).toEqual(mockData);
     });
@@ -68,7 +68,20 @@ describe('microCMS API', () => {
 
       expect(mockClient.getList).toHaveBeenCalledWith({
         endpoint: 'blog',
-        queries,
+        queries: { ...queries, filters: 'publishedAt[exists]' },
+      });
+    });
+
+    it('ユーザー指定の filters は publishedAt[exists] と AND 結合される', async () => {
+      const queries = { filters: 'tags[contains]tag1' };
+      const mockClient = getMockClient();
+      mockClient.getList.mockResolvedValue({ contents: [] });
+
+      await getList(queries);
+
+      expect(mockClient.getList).toHaveBeenCalledWith({
+        endpoint: 'blog',
+        queries: { filters: 'publishedAt[exists][and]tags[contains]tag1' },
       });
     });
 
