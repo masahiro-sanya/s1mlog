@@ -58,6 +58,13 @@ export const client = isValidConfig
       apiKey: 'dummy',
     });
 
+// 下書きを除外するための microCMS フィルタ。publishedAt が存在するもののみ返す。
+// 現状の API キーは権限上下書きも返してしまうため、フロント側で明示的に弾く必要がある。
+const PUBLISHED_FILTER = 'publishedAt[exists]';
+
+const mergeWithPublishedFilter = (userFilters?: string): string =>
+  userFilters ? `${PUBLISHED_FILTER}[and]${userFilters}` : PUBLISHED_FILTER;
+
 // ブログ一覧を取得
 export const getList = async (queries?: MicroCMSQueries) => {
   // APIキーが設定されていない場合は空のデータを返す
@@ -73,7 +80,7 @@ export const getList = async (queries?: MicroCMSQueries) => {
   try {
     const listData = await client.getList<Blog>({
       endpoint: 'blog',
-      queries,
+      queries: { ...queries, filters: mergeWithPublishedFilter(queries?.filters) },
     });
     return listData;
   } catch (error) {
