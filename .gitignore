@@ -55,8 +55,13 @@ CLAUDE.md
 # user-requested ignore
 AGENTS.md
 
-# local-only docs (blog ideas, drafts, etc.) — git管理対象外
-/localdocs/
+# local-only docs (blog ideas, drafts, etc.) — git管理対象外（symlink運用のため末尾スラッシュなし）
+/localdocs
 
 # article assets (thumbnail HTML/PNG generation) — local-only
 .article-assets/
+
+# next-sitemap generated files (postbuild で自動生成されるため git 管理対象外)
+front/public/robots.txt
+front/public/sitemap.xml
+front/public/sitemap-*.xml
