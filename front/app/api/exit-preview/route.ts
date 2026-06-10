@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { draftMode } from 'next/headers';
+import { cookies, draftMode } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { DRAFT_KEY_COOKIE } from '@/libs/preview';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const dm = await draftMode();
   dm.disable();
-  const redirectUrl = new URL('/', request.url);
-  return NextResponse.redirect(redirectUrl);
+  const cookieStore = await cookies();
+  cookieStore.delete(DRAFT_KEY_COOKIE);
+  redirect('/');
 }

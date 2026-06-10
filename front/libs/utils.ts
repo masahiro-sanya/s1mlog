@@ -1,26 +1,39 @@
-import { format } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
 import * as cheerio from 'cheerio';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/hybrid.css';
+// highlight.js はフルビルド（約190言語）を避け、ブログで使う言語のみ登録する
+import hljs from 'highlight.js/lib/core';
+import bash from 'highlight.js/lib/languages/bash';
+import css from 'highlight.js/lib/languages/css';
+import diff from 'highlight.js/lib/languages/diff';
+import dockerfile from 'highlight.js/lib/languages/dockerfile';
+import go from 'highlight.js/lib/languages/go';
+import ini from 'highlight.js/lib/languages/ini';
+import javascript from 'highlight.js/lib/languages/javascript';
+import json from 'highlight.js/lib/languages/json';
+import markdown from 'highlight.js/lib/languages/markdown';
+import plaintext from 'highlight.js/lib/languages/plaintext';
+import python from 'highlight.js/lib/languages/python';
+import shell from 'highlight.js/lib/languages/shell';
+import sql from 'highlight.js/lib/languages/sql';
+import typescript from 'highlight.js/lib/languages/typescript';
+import xml from 'highlight.js/lib/languages/xml';
+import yaml from 'highlight.js/lib/languages/yaml';
 
-/**
- * 日付をフォーマットする
- * @param date - UTC形式の日付文字列
- * @returns フォーマット済みの日付文字列 (例: "10 December, 2024")
- */
-export const formatDate = (date: string): string => {
-  if (!date) return ''; // `date`が存在しない場合は空文字を返す
-  try {
-    const utcDate = new Date(date);
-    if (isNaN(utcDate.getTime())) throw new Error('Invalid date format'); // 無効な日付チェック
-    const jstDate = toZonedTime(utcDate, 'Asia/Tokyo');
-    return format(jstDate, 'd MMMM, yyyy');
-  } catch (error) {
-    console.error('Error formatting date:', error);
-    return ''; // エラー時は空文字を返す
-  }
-};
+hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('diff', diff);
+hljs.registerLanguage('dockerfile', dockerfile);
+hljs.registerLanguage('go', go);
+hljs.registerLanguage('ini', ini); // toml も alias で対応
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('markdown', markdown);
+hljs.registerLanguage('plaintext', plaintext);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('shell', shell);
+hljs.registerLanguage('sql', sql);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('xml', xml); // html も alias で対応
+hljs.registerLanguage('yaml', yaml);
 
 // アフィリエイト判定対象のドメイン断片。判定はホスト名の含有チェックで行う（サブドメイン許容）
 const AFFILIATE_HOST_PATTERNS = [
@@ -71,13 +84,13 @@ export const formatRichText = (richText: string): string => {
      */
     const highlight = (text: string, lang?: string): string => {
       if (!text) return ''; // テキストが空の場合は何もしない
-      if (!lang) return hljs.highlightAuto(text).value; // 言語が指定されていない場合は自動検出
+      if (!lang) return hljs.highlightAuto(text).value; // 言語が指定されていない場合は登録済み言語から自動検出
 
       try {
         return hljs.highlight(text, { language: lang.replace(/^language-/, '') }).value;
       } catch (e) {
         console.warn('Error highlighting text with specific language:', e);
-        return hljs.highlightAuto(text).value; // エラー時は自動検出
+        return hljs.highlightAuto(text).value; // 未登録言語などのエラー時は自動検出
       }
     };
 

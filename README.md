@@ -6,7 +6,7 @@ Next.js + Vercel + microCMSを使用した、モダンなブログプラット�
 
 S1MLOGは、以下の技術を組み合わせたブログシステムです：
 
-- **フロントエンド**: Next.js 15.5（静的サイト生成）
+- **フロントエンド**: Next.js 16（App Router / ISR）
 - **CMS**: microCMS（ヘッドレスCMS）
 - **ホスティング**: Vercel
 - **スタイリング**: CSS Modules
@@ -27,9 +27,8 @@ s1mlog/
 │   ├── public/               # 静的アセット
 │   └── package.json          # 依存関係
 │
+├── .github/workflows/ci.yml # CI（lint / 型チェック / テスト / ビルド）
 ├── .gitignore               # Git除外設定
-├── .eslintrc.json           # ESLint設定
-├── .prettierrc              # Prettier設定
 ├── README.md                # このファイル
 └── CLAUDE.md                # Claude Code用ガイド
 ```
@@ -37,15 +36,15 @@ s1mlog/
 ## 🔧 技術スタック
 
 ### フロントエンド
-- **Next.js 15.5.2** - React フレームワーク（App Router使用）
-- **TypeScript 5.9.2** - 型安全な開発
+- **Next.js 16** - React フレームワーク（App Router / ISR）
+- **TypeScript 6** - 型安全な開発
 - **CSS Modules** - コンポーネントスコープのスタイリング
 - **microCMS SDK** - コンテンツ取得
 
 ## 🚦 クイックスタート
 
 ### 前提条件
-- Node.js 18以上
+- Node.js 20.9以上
 - microCMSアカウント
 - Vercelアカウント
 - GitHubリポジトリ
@@ -96,7 +95,7 @@ npm run dev
    - **Framework Preset**: Next.js
    - **Root Directory**: `front`
    - **Build Command**: `npm run build`
-   - **Output Directory**: `out`
+   - **Output Directory**: 既定のまま（Next.js のサーバーランタイムを使用）
 5. 環境変数を設定：
    - `MICROCMS_API_KEY`: microCMS APIキー
    - `MICROCMS_SERVICE_DOMAIN`: microCMSサービスドメイン
@@ -113,8 +112,8 @@ npm run dev
 - `develop`ブランチへのpushでプレビュー環境に自動デプロイ
 - Pull Requestごとにプレビュー環境が作成
 
-##### microCMS → Vercel Webhook 連携
-`output: 'export'` の静的サイト構成のため、microCMS で記事を公開しただけではサイトに反映されない。以下を一度設定すれば、microCMS 側の公開/更新/削除を契機に Vercel が自動再ビルドする。
+##### microCMS → Vercel Webhook 連携（任意）
+各ページは ISR（`revalidate = 60`）で配信しているため、microCMS で公開・更新した内容は**最大60秒で自動反映**される。即時反映したい場合や、サイトマップ（ビルド時生成）を更新したい場合のみ、以下の Deploy Hook を設定する。
 
 1. **Vercel: Deploy Hook を発行**
    - Vercel ダッシュボード → 該当プロジェクト → Settings → Git → "Deploy Hooks"
@@ -179,7 +178,7 @@ git push origin main  # または develop
 
 Vercelが自動で：
 1. Next.jsアプリをビルド
-2. 静的ファイルを最適化
+2. ページを静的生成（ISRで60秒ごとに再検証）
 3. グローバルCDNに配信
 
 ## 📝 開発ガイド
@@ -263,16 +262,16 @@ test('機能が正しく動作する', async ({ page }) => {
 ## 🔒 セキュリティ
 
 - 環境変数はVercelダッシュボードで安全に管理
-- APIキーはクライアントサイドに露出しない
-- 静的サイト生成により、サーバーサイドの脆弱性を最小化
+- APIキーはクライアントサイドに露出しない（取得はすべてサーバーサイド）
+- 下書きプレビューの draftKey は httpOnly cookie に保持し、URL に露出しない
 
 ## 📊 パフォーマンス
 
 Vercelの機能により最適化：
-- **自動画像最適化**: Next.js Image コンポーネント
+- **自動画像最適化**: Next.js Image コンポーネント + microCMS 画像 API（`?fm=webp&w=` など）
 - **グローバルCDN**: エッジロケーションからの配信
-- **静的生成**: ビルド時にHTMLを生成
-- **インクリメンタル静的再生成**: ISR対応可能
+- **静的生成 + ISR**: ビルド時にHTMLを生成し、60秒ごとに再検証
+- **一覧取得の fields 絞り込み**: 記事本文を除外して転送量を削減
 
 ## 🌍 環境
 

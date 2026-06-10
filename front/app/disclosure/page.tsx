@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import styles from '../privacy-policy/page.module.css';
 
 export const metadata: Metadata = {
-  title: 'アフィリエイト・広告に関する開示 | S1MLOG',
+  title: 'アフィリエイト・広告に関する開示',
   description:
     'S1MLOG における Google AdSense などのディスプレイ広告、Amazon アソシエイト等のアフィリエイトリンクの取り扱い・開示方針について記載しています。',
   alternates: { canonical: '/disclosure' },

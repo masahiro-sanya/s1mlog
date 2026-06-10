@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getList } from '@/libs/microcms';
+import { getList, LIST_FIELDS } from '@/libs/microcms';
 import ArticleList from '@/components/ArticleList';
 import Pagination from '@/components/Pagination';
 import { LIMIT } from '@/constants';
@@ -7,7 +7,6 @@ import { LIMIT } from '@/constants';
 type Props = {
   searchParams: Promise<{
     q?: string;
-    page?: string;
   }>;
 };
 
@@ -20,24 +19,18 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ searchParams }: Props) {
-  const resolvedSearchParams = await searchParams;
-  const page = parseInt(resolvedSearchParams.page || '1', 10);
+  const { q } = await searchParams;
 
   const data = await getList({
-    q: resolvedSearchParams.q,
+    q,
     limit: LIMIT,
-    offset: LIMIT * (page - 1),
+    fields: LIST_FIELDS,
   });
 
   return (
     <>
       <ArticleList articles={data.contents} />
-      <Pagination
-        totalCount={data.totalCount}
-        current={page}
-        basePath="/search"
-        q={resolvedSearchParams.q}
-      />
+      <Pagination totalCount={data.totalCount} basePath="/search" q={q} />
     </>
   );
 }

@@ -1,26 +1,26 @@
-import { notFound } from 'next/navigation';
-
 // microcms-js-sdkのモック
 jest.mock('microcms-js-sdk', () => {
   const mockGetList = jest.fn();
   const mockGetListDetail = jest.fn();
-  const mockGet = jest.fn();
 
   return {
     createClient: jest.fn(() => ({
       getList: mockGetList,
       getListDetail: mockGetListDetail,
-      get: mockGet,
     })),
   };
 });
 
 // テスト対象をモック設定後にインポート
-import { getList, getDetail, getTagList, getTag, getWriter, client } from '../microcms';
-
-jest.mock('next/navigation', () => ({
-  notFound: jest.fn(),
-}));
+import {
+  getList,
+  getDetail,
+  getTagList,
+  getTag,
+  getWriter,
+  getAllContentIds,
+  client,
+} from '../microcms';
 
 describe('microCMS API', () => {
   // モック関数にアクセスするためのヘルパー
@@ -104,7 +104,7 @@ describe('microCMS API', () => {
   describe('getDetail', () => {
     it('ブログ詳細を正常に取得できる', async () => {
       const mockDetail = {
-        id: '1',
+        id: 'detail-ok',
         title: 'Test Blog',
         content: 'Content',
       };
@@ -112,27 +112,40 @@ describe('microCMS API', () => {
       const mockClient = getMockClient();
       mockClient.getListDetail.mockResolvedValue(mockDetail);
 
-      const result = await getDetail('1');
+      const result = await getDetail('detail-ok');
 
       expect(mockClient.getListDetail).toHaveBeenCalledWith({
         endpoint: 'blog',
-        contentId: '1',
+        contentId: 'detail-ok',
         queries: undefined,
       });
       expect(result).toEqual(mockDetail);
     });
 
-    it('エラー時はnotFoundを呼ぶ', async () => {
+    it('draftKey などのクエリを渡せる', async () => {
+      const mockClient = getMockClient();
+      mockClient.getListDetail.mockResolvedValue({ id: 'detail-draft' });
+
+      await getDetail('detail-draft', { draftKey: 'abc' });
+
+      expect(mockClient.getListDetail).toHaveBeenCalledWith({
+        endpoint: 'blog',
+        contentId: 'detail-draft',
+        queries: { draftKey: 'abc' },
+      });
+    });
+
+    it('エラー時は null を返す（404 判断は呼び出し側）', async () => {
       const mockClient = getMockClient();
       mockClient.getListDetail.mockRejectedValue(new Error('Not found'));
 
-      await getDetail('invalid-id');
+      const result = await getDetail('invalid-id');
 
       expect(console.error).toHaveBeenCalledWith(
         'Error fetching blog detail (invalid-id):',
         expect.any(Error),
       );
-      expect(notFound).toHaveBeenCalled();
+      expect(result).toBeNull();
     });
   });
 
@@ -179,39 +192,39 @@ describe('microCMS API', () => {
   describe('getTag', () => {
     it('タグ詳細を正常に取得できる', async () => {
       const mockTag = {
-        id: 'tag1',
+        id: 'tag-ok',
         name: 'JavaScript',
       };
 
       const mockClient = getMockClient();
       mockClient.getListDetail.mockResolvedValue(mockTag);
 
-      const result = await getTag('tag1');
+      const result = await getTag('tag-ok');
 
       expect(mockClient.getListDetail).toHaveBeenCalledWith({
         endpoint: 'tags',
-        contentId: 'tag1',
+        contentId: 'tag-ok',
         queries: undefined,
       });
       expect(result).toEqual(mockTag);
     });
 
-    it('エラー時はnotFoundを呼ぶ', async () => {
+    it('エラー時は null を返す（404 判断は呼び出し側）', async () => {
       const mockClient = getMockClient();
       mockClient.getListDetail.mockRejectedValue(new Error('Not found'));
 
-      await getTag('invalid-tag');
+      const result = await getTag('invalid-tag');
 
       expect(console.error).toHaveBeenCalledWith(
         'Error fetching tag detail (invalid-tag):',
         expect.any(Error),
       );
-      expect(notFound).toHaveBeenCalled();
+      expect(result).toBeNull();
     });
   });
 
   describe('getWriter', () => {
-    it('ライター情報を正常に取得できる', async () => {
+    it('ライター情報（先頭の1件）を正常に取得できる', async () => {
       const mockWriter = {
         id: 'writer1',
         name: 'Test Writer',
@@ -219,21 +232,25 @@ describe('microCMS API', () => {
       };
 
       const mockClient = getMockClient();
-      mockClient.get.mockResolvedValue({
+      mockClient.getList.mockResolvedValue({
         contents: [mockWriter],
+        totalCount: 1,
+        offset: 0,
+        limit: 1,
       });
 
       const result = await getWriter();
 
-      expect(mockClient.get).toHaveBeenCalledWith({
+      expect(mockClient.getList).toHaveBeenCalledWith({
         endpoint: 'writers',
+        queries: { limit: 1 },
       });
       expect(result).toEqual(mockWriter);
     });
 
     it('エラー時はデフォルトのライター情報を返す', async () => {
       const mockClient = getMockClient();
-      mockClient.get.mockRejectedValue(new Error('API Error'));
+      mockClient.getList.mockRejectedValue(new Error('API Error'));
 
       const result = await getWriter();
 
@@ -248,15 +265,86 @@ describe('microCMS API', () => {
       });
     });
 
-    it('空の結果の場合はundefinedを返す', async () => {
+    it('空の結果の場合は null を返す', async () => {
       const mockClient = getMockClient();
-      mockClient.get.mockResolvedValue({
+      mockClient.getList.mockResolvedValue({
         contents: [],
+        totalCount: 0,
+        offset: 0,
+        limit: 1,
       });
 
       const result = await getWriter();
 
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getAllContentIds', () => {
+    it('100件を超えるコンテンツをページングして全件取得する', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({ id: `id-${i}` }));
+      const page2 = Array.from({ length: 50 }, (_, i) => ({ id: `id-${100 + i}` }));
+
+      const mockClient = getMockClient();
+      mockClient.getList
+        .mockResolvedValueOnce({ contents: page1, totalCount: 150, offset: 0, limit: 100 })
+        .mockResolvedValueOnce({ contents: page2, totalCount: 150, offset: 100, limit: 100 });
+
+      const result = await getAllContentIds('blog');
+
+      expect(result).toHaveLength(150);
+      expect(result[0]).toBe('id-0');
+      expect(result[149]).toBe('id-149');
+      expect(mockClient.getList).toHaveBeenCalledTimes(2);
+      expect(mockClient.getList).toHaveBeenNthCalledWith(1, {
+        endpoint: 'blog',
+        queries: {
+          fields: 'id',
+          limit: 100,
+          offset: 0,
+          filters: 'publishedAt[exists]',
+        },
+      });
+      expect(mockClient.getList).toHaveBeenNthCalledWith(2, {
+        endpoint: 'blog',
+        queries: {
+          fields: 'id',
+          limit: 100,
+          offset: 100,
+          filters: 'publishedAt[exists]',
+        },
+      });
+    });
+
+    it('tags エンドポイントでは publishedAt フィルタを付けない', async () => {
+      const mockClient = getMockClient();
+      mockClient.getList.mockResolvedValue({
+        contents: [{ id: 'tag1' }],
+        totalCount: 1,
+        offset: 0,
+        limit: 100,
+      });
+
+      const result = await getAllContentIds('tags');
+
+      expect(result).toEqual(['tag1']);
+      expect(mockClient.getList).toHaveBeenCalledWith({
+        endpoint: 'tags',
+        queries: { fields: 'id', limit: 100, offset: 0 },
+      });
+    });
+
+    it('エラー時は空配列を返す', async () => {
+      const mockClient = getMockClient();
+      mockClient.getList.mockRejectedValue(new Error('API Error'));
+
+      const result = await getAllContentIds('blog');
+
+      expect(console.error).toHaveBeenCalledWith(
+        'Error fetching all content ids (blog):',
+        expect.any(Error),
+      );
+      expect(result).toEqual([]);
     });
   });
 });

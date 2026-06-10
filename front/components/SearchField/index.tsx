@@ -1,22 +1,24 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './index.module.css';
 
 export default function SearchField() {
+  const router = useRouter();
   const [composing, setComposition] = useState(false);
   const startComposition = () => setComposition(true);
   const endComposition = () => setComposition(false);
-  const _onEnter: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (e.code === 'Enter' && !composing) {
-        location.href = `/search?q=${inputRef.current?.value}`;
+        const q = inputRef.current?.value.trim();
+        router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
       }
     },
-    [composing],
+    [composing, router],
   );
-  const inputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
   const defaultQuery = searchParams.get('q') || '';
   return (
@@ -26,7 +28,7 @@ export default function SearchField() {
       ref={inputRef}
       className={styles.search}
       placeholder="Search..."
-      onKeyDown={_onEnter}
+      onKeyDown={handleKeyDown}
       onCompositionStart={startComposition}
       onCompositionEnd={endComposition}
       defaultValue={defaultQuery}

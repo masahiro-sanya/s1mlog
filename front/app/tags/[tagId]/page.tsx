@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getList, getTag, getTagList, type Tag } from '@/libs/microcms';
+import { getAllContentIds, getList, getTag, LIST_FIELDS } from '@/libs/microcms';
 import { LIMIT } from '@/constants';
 import Pagination from '@/components/Pagination';
 import ArticleList from '@/components/ArticleList';
@@ -14,39 +14,28 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tagId } = await params;
-  try {
-    const tag = await getTag(tagId);
-    return {
-      title: `${tag.name} の記事一覧`,
-      description: `${tag.name} に関する記事一覧。`,
-      alternates: { canonical: `/tags/${tagId}` },
-    };
-  } catch {
+  const tag = await getTag(tagId);
+  if (!tag) {
     return { alternates: { canonical: `/tags/${tagId}` } };
   }
+  return {
+    title: `${tag.name} の記事一覧`,
+    description: `${tag.name} に関する記事一覧。`,
+    alternates: { canonical: `/tags/${tagId}` },
+  };
 }
 
 export async function generateStaticParams() {
-  try {
-    const { contents } = await getTagList();
-
-    const paths = contents.map((tag: Tag) => ({
-      tagId: tag.id,
-    }));
-
-    return paths;
-  } catch (error) {
-    console.error('Error generating static params for tags:', error);
-    return [];
-  }
+  const tagIds = await getAllContentIds('tags');
+  return tagIds.map((tagId) => ({ tagId }));
 }
 
 export default async function Page({ params }: Props) {
-  const resolvedParams = await params;
-  const { tagId } = resolvedParams;
+  const { tagId } = await params;
   const data = await getList({
     limit: LIMIT,
     filters: `tags[contains]${tagId}`,
+    fields: LIST_FIELDS,
   });
 
   return (

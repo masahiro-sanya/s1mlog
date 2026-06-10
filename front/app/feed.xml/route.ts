@@ -12,7 +12,11 @@ const escapeXml = (s: string): string =>
     .replace(/'/g, '&apos;');
 
 export async function GET() {
-  const data = await getList({ limit: 30, orders: '-publishedAt' });
+  const data = await getList({
+    limit: 30,
+    orders: '-publishedAt',
+    fields: 'id,title,description,publishedAt,createdAt,updatedAt',
+  });
   const items = (data.contents || [])
     .map((article) => {
       const link = `${SITE_URL}/articles/${article.id}/`;
