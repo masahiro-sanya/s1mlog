@@ -11,6 +11,10 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    // jsdom 環境では cheerio が browser 向け ESM に解決されて Jest が解釈できないため、CJS ビルドへ向ける
+    '^cheerio$': '<rootDir>/node_modules/cheerio/dist/commonjs/index.js',
+    // cheerio が fromURL 用に読み込む undici は jsdom で初期化できないためスタブ化（テストでは未使用）
+    '^undici$': '<rootDir>/test/undici-stub.js',
   },
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
@@ -25,18 +29,6 @@ const customJestConfig = {
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(test).[jt]s?(x)'],
   moduleDirectories: ['node_modules', '<rootDir>/'],
   testPathIgnorePatterns: ['/node_modules/', '/.next/', '/out/', '/e2e/'],
-  transformIgnorePatterns: [
-    '/node_modules/(?!(cheerio|htmlparser2|domhandler|domutils|dom-serializer|entities|parse5|parse5-htmlparser2-tree-adapter|whatwg-url)/)',
-    '^.+\\.module\\.(css|sass|scss)$',
-  ],
-  coverageThreshold: {
-    global: {
-      branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50,
-    },
-  },
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

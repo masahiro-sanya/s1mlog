@@ -9,3 +9,11 @@ export const SITE_DESCRIPTION =
 export const SITE_TWITTER = process.env.NEXT_PUBLIC_SITE_TWITTER || ''; // 例: '@s1msys'
 export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || ''; // 例: 'ca-pub-XXXXXXXXXXXXXXXX'
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-18SL4QCQH0';
+
+// AdSense 広告スロット ID（未設定のスロットは描画されない）
+export const ADSENSE_SLOTS = {
+  sidebar: process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || '',
+  articleTop: process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP || '',
+  articleMid: process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_MID || '',
+  articleBottom: process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_BOTTOM || '',
+};

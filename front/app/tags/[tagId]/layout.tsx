@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { getTag } from '@/libs/microcms';
 import TagListItem from '@/components/TagListItem';
 import styles from './layout.module.css';
@@ -10,9 +11,11 @@ type Props = {
 };
 
 export default async function TagsLayout({ children, params }: Props) {
-  const resolvedParams = await params;
-  const { tagId } = resolvedParams;
+  const { tagId } = await params;
   const tag = await getTag(tagId);
+  if (!tag) {
+    notFound();
+  }
   return (
     <div>
       <p className={styles.title}>

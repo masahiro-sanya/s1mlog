@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { type Article, getList } from '@/libs/microcms';
+import { type Article, getList, LIST_FIELDS } from '@/libs/microcms';
 import styles from './index.module.css';
 
 type Props = {
@@ -12,7 +12,7 @@ export default async function RelatedArticles({ current, limit = 3 }: Props) {
   if (tagIds.length === 0) return null;
 
   const filters = tagIds.map((id) => `tags[contains]${id}`).join('[or]');
-  const data = await getList({ limit: limit + 1, filters });
+  const data = await getList({ limit: limit + 1, filters, fields: LIST_FIELDS });
   const related = (data.contents || []).filter((a) => a.id !== current.id).slice(0, limit);
 
   if (related.length === 0) return null;

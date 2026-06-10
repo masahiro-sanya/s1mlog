@@ -3,7 +3,7 @@ import styles from './page.module.css';
 import ContactForm from '@/components/ContactForm';
 
 export const metadata: Metadata = {
-  title: 'お問い合わせ | S1MLOG',
+  title: 'お問い合わせ',
   description:
     'S1MLOG へのお問い合わせページ。ご意見・ご要望・不具合報告などはこちらからご連絡ください。',
   alternates: { canonical: '/contact' },

@@ -2,11 +2,12 @@
 
 ![](public/img-cover.png)
 
-Next.js 15とmicroCMSを使用したブログアプリケーションのフロントエンドです。
+Next.js 16とmicroCMSを使用したブログアプリケーションのフロントエンドです。
+各ページは ISR（`revalidate = 60`）で配信され、microCMS の更新は最大60秒で自動反映されます。
 
 ## 動作環境
 
-Node.js 18 以上
+Node.js 20.9 以上
 
 ## 環境変数の設定
 
@@ -76,7 +77,7 @@ npm run test:coverage # カバレッジレポート付きテスト
    - **Root Directory**: `front`
    - **Framework Preset**: Next.js
    - **Build Command**: `npm run build`
-   - **Output Directory**: `out`
+   - **Output Directory**: 既定のまま（ISR を使うため `out` への静的書き出しはしない）
 
 ### 環境変数の設定
 
@@ -101,16 +102,26 @@ GitHubへのpushで自動的にデプロイされます：
 front/
 ├── app/                # App Routerのページ
 │   ├── articles/       # 記事詳細
-│   ├── search/         # 検索
+│   ├── search/         # 検索（2ページ目以降は /search/p/2?q=keyword）
 │   ├── tags/           # タグ別一覧
-│   └── p/              # ページネーション
+│   ├── p/              # ページネーション（2ページ目以降）
+│   └── api/            # プレビュー用 Route Handler（/api/preview, /api/exit-preview）
 ├── components/         # Reactコンポーネント
 ├── libs/              # ユーティリティ
-│   └── microcms.ts    # microCMS API
+│   ├── microcms.ts    # microCMS API
+│   ├── pagination.ts  # ページ数計算・ページ番号バリデーション
+│   ├── toc.ts         # 目次生成・本文分割
+│   ├── date.ts        # 日付フォーマット
+│   └── utils.ts       # リッチテキスト整形（ハイライト・アフィリエイトrel付与）
 ├── constants/         # 定数
 ├── public/            # 静的ファイル
 └── e2e/               # E2Eテスト
 ```
+
+## 下書きプレビュー
+
+microCMS の下書きは `/api/preview?contentId=<記事ID>&draftKey=<draftKey>` にアクセスすると確認できます。
+draftKey は httpOnly cookie に保存され、URL には残りません。プレビューの終了は `/api/exit-preview` です。
 
 ## テスト
 
@@ -130,8 +141,8 @@ npx playwright test --ui
 
 ## 技術スタック
 
-- **Next.js 15.5.2** - Reactフレームワーク
-- **TypeScript 5.9.2** - 型安全性
+- **Next.js 16** - Reactフレームワーク（App Router / ISR）
+- **TypeScript 6** - 型安全性
 - **CSS Modules** - スタイリング
 - **microCMS SDK** - CMS連携
 - **Jest** - ユニットテスト

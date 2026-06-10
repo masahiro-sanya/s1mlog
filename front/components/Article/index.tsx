@@ -1,7 +1,10 @@
 import { formatRichText } from '@/libs/utils';
+import { buildTocHtml } from '@/libs/toc';
 import { type Article } from '@/libs/microcms';
+import { ADSENSE_SLOTS } from '@/constants';
 import PublishedDate from '../Date';
-import TableOfContents, { buildTocHtml } from '../TableOfContents';
+import TableOfContents from '../TableOfContents';
+import 'highlight.js/styles/hybrid.css';
 import AdSlot from '../AdSlot';
 import PRDisclosure from '../PRDisclosure';
 import styles from './index.module.css';
@@ -11,9 +14,9 @@ type Props = {
   data: Article;
 };
 
-const AD_SLOT_ARTICLE_TOP = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP || '';
-const AD_SLOT_ARTICLE_MID = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_MID || '';
-const AD_SLOT_ARTICLE_BOTTOM = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_BOTTOM || '';
+const AD_SLOT_ARTICLE_TOP = ADSENSE_SLOTS.articleTop;
+const AD_SLOT_ARTICLE_MID = ADSENSE_SLOTS.articleMid;
+const AD_SLOT_ARTICLE_BOTTOM = ADSENSE_SLOTS.articleBottom;
 
 export default function Article({ data }: Props) {
   const formattedContent = data.content ? formatRichText(data.content) : '';

@@ -19,19 +19,19 @@ export default function ArticleListItem({ article }: Props) {
               <source
                 type="image/webp"
                 media="(max-width: 640px)"
-                srcSet={`${article.thumbnail?.url}?fm=webp&fit=crop&w=720&h=405 1x, ${article.thumbnail?.url}?fm=webp&fit=crop&w=720&h=405&dpr=2 2x`}
+                srcSet={`${article.thumbnail.url}?fm=webp&fit=crop&w=720&h=405 1x, ${article.thumbnail.url}?fm=webp&fit=crop&w=720&h=405&dpr=2 2x`}
               />
               <source
                 type="image/webp"
-                srcSet={`${article.thumbnail?.url}?fm=webp&fit=crop&w=440&h=248 1x, ${article.thumbnail?.url}?fm=webp&fit=crop&w=440&h=248&dpr=2 2x`}
+                srcSet={`${article.thumbnail.url}?fm=webp&fit=crop&w=440&h=248 1x, ${article.thumbnail.url}?fm=webp&fit=crop&w=440&h=248&dpr=2 2x`}
               />
               <img
-                src={article.thumbnail?.url || `/noimage.png`}
+                src={`${article.thumbnail.url}?w=720`}
                 alt=""
                 className={styles.image}
                 loading="lazy"
-                width={article.thumbnail?.width}
-                height={article.thumbnail?.height}
+                width={article.thumbnail.width}
+                height={article.thumbnail.height}
               />
             </picture>
           ) : (

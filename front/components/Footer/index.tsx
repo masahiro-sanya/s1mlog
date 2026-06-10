@@ -15,7 +15,7 @@ export default function Footer() {
         <span className={styles.sep}>/</span>
         <a href="/feed.xml">RSS</a>
       </nav>
-      <p className={styles.cr}>© S1MLOG. All Rights Reserved 2024</p>
+      <p className={styles.cr}>© S1MLOG. All Rights Reserved {new Date().getFullYear()}</p>
     </footer>
   );
 }

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          # package-lock.json は .gitignore で管理対象外のため package.json をキャッシュキーにする
+          cache-dependency-path: front/package.json
+
+      # ロックファイルをコミットしていないため npm ci ではなく npm install を使う
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm run test
+
+      # microCMS の API キーがなくてもフォールバックでビルドが通ることを保証する
+      - name: Build
+        run: npm run build

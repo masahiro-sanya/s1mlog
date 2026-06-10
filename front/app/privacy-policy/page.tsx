@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
-  title: 'プライバシーポリシー | S1MLOG',
+  title: 'プライバシーポリシー',
   description:
     'S1MLOGのプライバシーポリシー。アクセス解析・広告（Google アナリティクス / Google AdSense）に関する情報を掲載しています。',
   alternates: { canonical: '/privacy-policy' },

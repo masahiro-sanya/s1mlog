@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { formatDate } from '@/libs/utils';
+import { formatDate } from '@/libs/date';
 import styles from './index.module.css';
 
 type Props = {

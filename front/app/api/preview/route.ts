@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { draftMode } from 'next/headers';
+import { cookies, draftMode } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { client } from '@/libs/microcms';
 import type { Blog } from '@/libs/microcms';
+import { DRAFT_KEY_COOKIE } from '@/libs/preview';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -19,9 +21,16 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Invalid draftKey or contentId', { status: 401 });
   }
 
-  // Draft Modeを有効化し、対象記事へリダイレクト
+  // Draft Mode を有効化。draftKey は cookie に保持し、URL には載せない
+  // （アクセスログ・ブラウザ履歴・Referer への漏えいを防ぐ）
   const dm = await draftMode();
   dm.enable();
-  const redirectUrl = new URL(`/articles/${contentId}?draftKey=${draftKey}`, request.url);
-  return NextResponse.redirect(redirectUrl);
+  const cookieStore = await cookies();
+  cookieStore.set(DRAFT_KEY_COOKIE, draftKey, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+  });
+  redirect(`/articles/${contentId}/`);
 }

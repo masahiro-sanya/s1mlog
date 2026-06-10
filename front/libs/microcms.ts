@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from 'microcms-js-sdk';
 import type {
   MicroCMSQueries,
@@ -5,7 +6,6 @@ import type {
   MicroCMSDate,
   MicroCMSContentId,
 } from 'microcms-js-sdk';
-import { notFound } from 'next/navigation';
 
 // タグの型定義
 export type Tag = {
@@ -33,30 +33,35 @@ export type Blog = {
 
 export type Article = Blog & MicroCMSContentId & MicroCMSDate;
 
-// Initialize Client SDK.
+// 一覧表示で必要なフィールドのみを取得するための fields 指定（content 全文を除外して転送量を抑える）
+export const LIST_FIELDS = 'id,title,description,thumbnail,tags,publishedAt,createdAt,updatedAt';
+
 // ビルド時のチェック - Vercelビルド時は環境変数がない可能性がある
-const isValidConfig =
-  process.env.MICROCMS_SERVICE_DOMAIN &&
-  process.env.MICROCMS_API_KEY &&
+const isConfigured = (): boolean =>
+  Boolean(process.env.MICROCMS_SERVICE_DOMAIN) &&
+  Boolean(process.env.MICROCMS_API_KEY) &&
   process.env.MICROCMS_SERVICE_DOMAIN !== 'dummy' &&
   process.env.MICROCMS_API_KEY !== 'dummy';
 
-const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN || 'dummy';
-const apiKey = process.env.MICROCMS_API_KEY || 'dummy';
-
-if (!isValidConfig) {
+if (!isConfigured()) {
   console.warn('MicroCMS credentials not configured. Using dummy values for build.');
 }
 
-export const client = isValidConfig
-  ? createClient({
-      serviceDomain,
-      apiKey,
-    })
-  : createClient({
-      serviceDomain: 'dummy',
-      apiKey: 'dummy',
-    });
+export const client = createClient({
+  serviceDomain: process.env.MICROCMS_SERVICE_DOMAIN || 'dummy',
+  apiKey: process.env.MICROCMS_API_KEY || 'dummy',
+});
+
+const emptyList = <T>() => ({ contents: [] as T[], totalCount: 0, offset: 0, limit: 0 });
+
+const DEFAULT_WRITER: Writer = {
+  id: 'default',
+  name: 'Default Writer',
+  profile: 'No profile available',
+  createdAt: '',
+  updatedAt: '',
+  publishedAt: '',
+};
 
 // 下書きを除外するための microCMS フィルタ。publishedAt が存在するもののみ返す。
 // 現状の API キーは権限上下書きも返してしまうため、フロント側で明示的に弾く必要がある。
@@ -67,134 +72,130 @@ const mergeWithPublishedFilter = (userFilters?: string): string =>
 
 // ブログ一覧を取得
 export const getList = async (queries?: MicroCMSQueries) => {
-  // APIキーが設定されていない場合は空のデータを返す
-  if (
-    !process.env.MICROCMS_SERVICE_DOMAIN ||
-    !process.env.MICROCMS_API_KEY ||
-    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
-    process.env.MICROCMS_API_KEY === 'dummy'
-  ) {
-    return { contents: [], totalCount: 0, offset: 0, limit: 0 };
+  if (!isConfigured()) {
+    return emptyList<Article>();
   }
 
   try {
-    const listData = await client.getList<Blog>({
+    return await client.getList<Blog>({
       endpoint: 'blog',
       queries: { ...queries, filters: mergeWithPublishedFilter(queries?.filters) },
     });
-    return listData;
   } catch (error) {
     console.error('Error fetching blog list:', error);
-    return { contents: [], totalCount: 0, offset: 0, limit: 0 };
+    return emptyList<Article>();
   }
 };
 
-// ブログの詳細を取得
-export const getDetail = async (contentId: string, queries?: MicroCMSQueries) => {
-  // APIキーが設定されていない場合
-  if (
-    !process.env.MICROCMS_SERVICE_DOMAIN ||
-    !process.env.MICROCMS_API_KEY ||
-    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
-    process.env.MICROCMS_API_KEY === 'dummy'
-  ) {
-    notFound();
-  }
+// ブログの詳細を取得。見つからない/エラー時は null を返す（404 判断は呼び出し側で行う）
+export const getDetail = cache(
+  async (contentId: string, queries?: MicroCMSQueries): Promise<Article | null> => {
+    if (!isConfigured()) {
+      return null;
+    }
 
-  try {
-    const detailData = await client.getListDetail<Blog>({
-      endpoint: 'blog',
-      contentId,
-      queries,
-    });
-    return detailData;
-  } catch (error) {
-    console.error(`Error fetching blog detail (${contentId}):`, error);
-    notFound();
-  }
-};
+    try {
+      return await client.getListDetail<Blog>({
+        endpoint: 'blog',
+        contentId,
+        queries,
+      });
+    } catch (error) {
+      console.error(`Error fetching blog detail (${contentId}):`, error);
+      return null;
+    }
+  },
+);
 
 // タグの一覧を取得
 export const getTagList = async (queries?: MicroCMSQueries) => {
-  // APIキーが設定されていない場合は空のデータを返す
-  if (
-    !process.env.MICROCMS_SERVICE_DOMAIN ||
-    !process.env.MICROCMS_API_KEY ||
-    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
-    process.env.MICROCMS_API_KEY === 'dummy'
-  ) {
-    return { contents: [], totalCount: 0, offset: 0, limit: 0 };
+  if (!isConfigured()) {
+    return emptyList<Tag>();
   }
 
   try {
-    const listData = await client.getList<Tag>({
+    return await client.getList<Tag>({
       endpoint: 'tags',
       queries,
     });
-    return listData;
   } catch (error) {
     console.error('Error fetching tag list:', error);
-    return { contents: [], totalCount: 0, offset: 0, limit: 0 };
+    return emptyList<Tag>();
   }
 };
 
-// タグの詳細を取得
-export const getTag = async (contentId: string, queries?: MicroCMSQueries) => {
-  if (
-    !process.env.MICROCMS_SERVICE_DOMAIN ||
-    !process.env.MICROCMS_API_KEY ||
-    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
-    process.env.MICROCMS_API_KEY === 'dummy'
-  ) {
-    notFound();
+// タグの詳細を取得。見つからない/エラー時は null を返す（404 判断は呼び出し側で行う）
+export const getTag = cache(
+  async (contentId: string, queries?: MicroCMSQueries): Promise<Tag | null> => {
+    if (!isConfigured()) {
+      return null;
+    }
+
+    try {
+      return await client.getListDetail<Tag>({
+        endpoint: 'tags',
+        contentId,
+        queries,
+      });
+    } catch (error) {
+      console.error(`Error fetching tag detail (${contentId}):`, error);
+      return null;
+    }
+  },
+);
+
+// ライター情報を取得（先頭の1件）。未登録時は null、エラー時はデフォルト値を返す
+export const getWriter = async (): Promise<Writer | null> => {
+  if (!isConfigured()) {
+    return DEFAULT_WRITER;
   }
 
   try {
-    const detailData = await client.getListDetail<Tag>({
-      endpoint: 'tags',
-      contentId,
-      queries,
-    });
-    return detailData;
-  } catch (error) {
-    console.error(`Error fetching tag detail (${contentId}):`, error);
-    notFound();
-  }
-};
-
-export const getWriter = async () => {
-  if (
-    !process.env.MICROCMS_SERVICE_DOMAIN ||
-    !process.env.MICROCMS_API_KEY ||
-    process.env.MICROCMS_SERVICE_DOMAIN === 'dummy' ||
-    process.env.MICROCMS_API_KEY === 'dummy'
-  ) {
-    return {
-      id: 'default',
-      name: 'Default Writer',
-      profile: 'No profile available',
-      createdAt: '',
-      updatedAt: '',
-      publishedAt: '',
-    };
-  }
-
-  try {
-    const writerData = await client.get({
+    const writerData = await client.getList<Writer>({
       endpoint: 'writers',
+      queries: { limit: 1 },
     });
-    const firstWriter = writerData.contents[0];
-    return firstWriter;
+    return writerData.contents[0] ?? null;
   } catch (error) {
     console.error('Error fetching writers:', error);
-    // デフォルトのライター情報を返す
-    return {
-      id: 'default',
-      name: 'Default Writer',
-      profile: 'No profile available',
-      createdAt: '',
-      updatedAt: '',
-      publishedAt: '',
-    };
+    return DEFAULT_WRITER;
+  }
+};
+
+// 全コンテンツの ID を取得する（generateStaticParams 用）。
+// microCMS の 1 リクエスト上限である 100 件ずつページングして全件取得する。
+const ALL_IDS_PAGE_SIZE = 100;
+
+export const getAllContentIds = async (
+  endpoint: 'blog' | 'tags',
+  filters?: string,
+): Promise<string[]> => {
+  if (!isConfigured()) {
+    return [];
+  }
+
+  const mergedFilters = endpoint === 'blog' ? mergeWithPublishedFilter(filters) : filters;
+
+  try {
+    const ids: string[] = [];
+    let offset = 0;
+    for (;;) {
+      const res = await client.getList<Record<string, never>>({
+        endpoint,
+        queries: {
+          fields: 'id',
+          limit: ALL_IDS_PAGE_SIZE,
+          offset,
+          ...(mergedFilters ? { filters: mergedFilters } : {}),
+        },
+      });
+      ids.push(...res.contents.map((c) => c.id));
+      offset += ALL_IDS_PAGE_SIZE;
+      if (offset >= res.totalCount) break;
+    }
+    return ids;
+  } catch (error) {
+    console.error(`Error fetching all content ids (${endpoint}):`, error);
+    return [];
   }
 };

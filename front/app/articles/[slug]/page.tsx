@@ -1,5 +1,9 @@
+import { cache } from 'react';
 import { Metadata } from 'next';
-import { getDetail, getList, type Article as ArticleType } from '@/libs/microcms';
+import { notFound } from 'next/navigation';
+import { cookies, draftMode } from 'next/headers';
+import { getAllContentIds, getDetail } from '@/libs/microcms';
+import { DRAFT_KEY_COOKIE } from '@/libs/preview';
 import { SITE_NAME, SITE_URL } from '@/constants';
 import Article from '@/components/Article';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -9,36 +13,41 @@ import ShareButtons from '@/components/ShareButtons';
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ dk?: string; draftKey?: string }>;
 };
 
 export const revalidate = 60;
 
+// Draft Mode が有効な場合のみ cookie から draftKey を読む。
+// 静的生成時は cookies() に触れないため、公開記事は SSG/ISR のまま配信される。
+const getDraftKey = cache(async (): Promise<string | undefined> => {
+  const { isEnabled } = await draftMode();
+  if (!isEnabled) return undefined;
+  const cookieStore = await cookies();
+  return cookieStore.get(DRAFT_KEY_COOKIE)?.value;
+});
+
+// generateMetadata と Page で同一記事を二重取得しないよう cache() で共有する
+const getArticle = cache(async (slug: string, draftKey?: string) =>
+  getDetail(slug, draftKey ? { draftKey } : undefined),
+);
+
 export async function generateStaticParams() {
-  try {
-    const { contents } = await getList();
-
-    const paths = contents.map((post: ArticleType) => ({
-      slug: post.id,
-    }));
-
-    return paths;
-  } catch (error) {
-    console.error('Error generating static params for articles:', error);
-    return [];
-  }
+  const ids = await getAllContentIds('blog');
+  return ids.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const draftKey = resolvedSearchParams.draftKey || resolvedSearchParams.dk;
-  const data = await getDetail(resolvedParams.slug, { draftKey });
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const draftKey = await getDraftKey();
+  const data = await getArticle(slug, draftKey);
+  if (!data) {
+    notFound();
+  }
 
-  const url = `/articles/${resolvedParams.slug}`;
+  const url = `/articles/${slug}`;
   const title = data.title || '記事';
   const description = data.description || undefined;
-  const ogImages = data?.thumbnail?.url ? [data.thumbnail.url] : ['/ogp.png'];
+  const ogImages = data.thumbnail?.url ? [data.thumbnail.url] : ['/ogp.png'];
 
   return {
     title,
@@ -65,13 +74,15 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   };
 }
 
-export default async function Page({ params, searchParams }: Props) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const draftKey = resolvedSearchParams.draftKey || resolvedSearchParams.dk;
-  const data = await getDetail(resolvedParams.slug, { draftKey });
+export default async function Page({ params }: Props) {
+  const { slug } = await params;
+  const draftKey = await getDraftKey();
+  const data = await getArticle(slug, draftKey);
+  if (!data) {
+    notFound();
+  }
 
-  const url = `/articles/${resolvedParams.slug}`;
+  const url = `/articles/${slug}`;
   const fullUrl = `${SITE_URL}${url}`;
   const imageUrl = data.thumbnail?.url || `${SITE_URL}/ogp.png`;
 

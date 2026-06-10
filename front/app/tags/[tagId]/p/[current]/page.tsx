@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
-import { getList, getTagList } from '@/libs/microcms';
+import { notFound } from 'next/navigation';
+import { getAllContentIds, getList, LIST_FIELDS } from '@/libs/microcms';
+import { buildPageParams, parsePageNumber } from '@/libs/pagination';
 import { LIMIT } from '@/constants';
 import Pagination from '@/components/Pagination';
 import ArticleList from '@/components/ArticleList';
@@ -23,41 +25,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  try {
-    const tagList = await getTagList();
-    const paths = [];
+  const tagIds = await getAllContentIds('tags');
+  const paths: { tagId: string; current: string }[] = [];
 
-    for (const tag of tagList.contents) {
-      const data = await getList({
-        limit: 1,
-        filters: `tags[contains]${tag.id}`,
-      });
-
-      const pageCount = Math.ceil(data.totalCount / LIMIT);
-
-      for (let i = 2; i <= pageCount; i++) {
-        paths.push({
-          tagId: tag.id,
-          current: i.toString(),
-        });
-      }
+  for (const tagId of tagIds) {
+    const data = await getList({
+      limit: 1,
+      fields: 'id',
+      filters: `tags[contains]${tagId}`,
+    });
+    for (const { current } of buildPageParams(data.totalCount)) {
+      paths.push({ tagId, current });
     }
-
-    return paths;
-  } catch (error) {
-    console.error('Error generating static params for tag pages:', error);
-    return [];
   }
+
+  return paths;
 }
 
 export default async function Page({ params }: Props) {
-  const resolvedParams = await params;
-  const { tagId } = resolvedParams;
-  const current = parseInt(resolvedParams.current as string, 10);
+  const { tagId, current: rawCurrent } = await params;
+  const current = parsePageNumber(rawCurrent);
+  if (current === null) {
+    notFound();
+  }
   const data = await getList({
     limit: LIMIT,
     offset: LIMIT * (current - 1),
     filters: `tags[contains]${tagId}`,
+    fields: LIST_FIELDS,
   });
   return (
     <>

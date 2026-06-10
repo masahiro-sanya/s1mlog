@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { getTagList, getWriter } from '@/libs/microcms';
 import {
   ADSENSE_CLIENT,
+  ADSENSE_SLOTS,
   GA_MEASUREMENT_ID,
-  LIMIT,
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_TWITTER,
@@ -18,10 +18,11 @@ import JsonLd from '@/components/JsonLd';
 import CookieConsent from '@/components/CookieConsent';
 import AnalyticsListeners from '@/components/Analytics';
 import AdSlot from '@/components/AdSlot';
-
-const AD_SLOT_SIDEBAR = process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || '';
 import './globals.css';
 import styles from './layout.module.css';
+
+// ナビに表示するタグの最大件数（一覧の表示件数 LIMIT とは別物）
+const NAV_TAG_LIMIT = 100;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -63,8 +64,7 @@ type Props = {
 };
 
 export default async function RootLayout({ children }: Props) {
-  const tags = await getTagList({ limit: LIMIT });
-  const writer = await getWriter();
+  const [tags, writer] = await Promise.all([getTagList({ limit: NAV_TAG_LIMIT }), getWriter()]);
 
   const websiteSchema = {
     '@context': 'https://schema.org',
@@ -92,7 +92,8 @@ export default async function RootLayout({ children }: Props) {
   };
 
   return (
-    <html lang="ja">
+    // data-scroll-behavior: globals.css の scroll-behavior: smooth をルート遷移時も意図通りに扱う
+    <html lang="ja" data-scroll-behavior="smooth">
       <head>
         <Script id="ga-consent-default" strategy="beforeInteractive">
           {`
@@ -108,18 +109,22 @@ export default async function RootLayout({ children }: Props) {
             });
           `}
         </Script>
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="ga4-init" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
-          `}
-        </Script>
+        {process.env.NODE_ENV === 'production' && GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+              `}
+            </Script>
+          </>
+        )}
         {ADSENSE_CLIENT && (
           <Script
             id="adsense"
@@ -137,9 +142,9 @@ export default async function RootLayout({ children }: Props) {
         <div className={styles.container}>
           <aside className={styles.sidebar}>
             <Profile writer={writer} />
-            {AD_SLOT_SIDEBAR && (
+            {ADSENSE_SLOTS.sidebar && (
               <div className={styles.sidebarAd}>
-                <AdSlot slot={AD_SLOT_SIDEBAR} format="auto" />
+                <AdSlot slot={ADSENSE_SLOTS.sidebar} format="auto" />
               </div>
             )}
           </aside>
