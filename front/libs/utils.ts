@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import sanitizeHtml from 'sanitize-html';
 // highlight.js はフルビルド（約190言語）を避け、ブログで使う言語のみ登録する
 import hljs from 'highlight.js/lib/core';
 import bash from 'highlight.js/lib/languages/bash';
@@ -65,6 +66,87 @@ const isAffiliateUrl = (url: string): boolean => {
   }
 };
 
+// iframe の埋め込みを許可するホスト（動画・スライド等の正規プロバイダのみ）
+const ALLOWED_IFRAME_HOSTS = [
+  'www.youtube.com',
+  'youtube.com',
+  'www.youtube-nocookie.com',
+  'player.vimeo.com',
+  'docs.google.com',
+  'speakerdeck.com',
+  'www.speakerdeck.com',
+  'codepen.io',
+  'platform.twitter.com',
+  'www.slideshare.net',
+  'codesandbox.io',
+];
+
+// CMS 本文（オーナー入力だが CMS 侵害・共同ライター・外部貼付を想定）をサニタイズする。
+// script / on* ハンドラ / javascript: スキーム / 未許可ホストの iframe を除去し、
+// 既存記事の構造（見出し・コードブロック・リンク・表・画像・許可 iframe）は温存する。
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+    'img',
+    'h1',
+    'h2',
+    'figure',
+    'figcaption',
+    'picture',
+    'source',
+    'iframe',
+    'span',
+    'sup',
+    'sub',
+    'del',
+    'ins',
+    'u',
+    's',
+    'mark',
+    'details',
+    'summary',
+    'section',
+    'article',
+    'video',
+    'audio',
+  ]),
+  allowedAttributes: {
+    '*': ['id', 'class', 'style'],
+    a: ['href', 'name', 'target', 'rel'],
+    img: ['src', 'srcset', 'sizes', 'alt', 'title', 'width', 'height', 'loading', 'decoding'],
+    source: ['src', 'srcset', 'type', 'media', 'sizes'],
+    iframe: [
+      'src',
+      'width',
+      'height',
+      'allow',
+      'allowfullscreen',
+      'frameborder',
+      'loading',
+      'title',
+      'referrerpolicy',
+    ],
+    video: ['src', 'width', 'height', 'controls', 'poster', 'preload'],
+    audio: ['src', 'controls', 'preload'],
+    code: ['class'],
+    ol: ['start', 'type'],
+    td: ['colspan', 'rowspan'],
+    th: ['colspan', 'rowspan', 'scope'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  allowedSchemesByTag: { img: ['http', 'https', 'data'] },
+  allowedIframeHostnames: ALLOWED_IFRAME_HOSTS,
+  // style 属性は残すが、値をホワイトリストで制限し url(javascript:) 等を排除する
+  allowedStyles: {
+    '*': {
+      'text-align': [/^(left|right|center|justify)$/],
+      color: [/^#(0x)?[0-9a-f]+$/i, /^rgba?\([\d.,\s%]+\)$/i, /^[a-z-]+$/i],
+      'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgba?\([\d.,\s%]+\)$/i, /^[a-z-]+$/i],
+      'font-weight': [/^(bold|bolder|lighter|normal|\d+)$/i],
+      'text-decoration': [/^[a-z-\s]+$/i],
+    },
+  },
+};
+
 /**
  * リッチテキストをHTML形式にフォーマットする
  * @param richText - リッチテキスト文字列
@@ -74,7 +156,9 @@ export const formatRichText = (richText: string): string => {
   if (!richText || typeof richText !== 'string') return ''; // `richText`が文字列でない場合のチェック
 
   try {
-    const $ = cheerio.load(richText); // Cheerioインスタンスを生成
+    // まず危険なマークアップを除去してから整形する（XSS の主防御）
+    const sanitized = sanitizeHtml(richText, SANITIZE_OPTIONS);
+    const $ = cheerio.load(sanitized); // Cheerioインスタンスを生成
 
     /**
      * ハイライト処理を適用

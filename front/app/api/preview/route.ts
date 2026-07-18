@@ -14,6 +14,15 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing contentId or draftKey', { status: 400 });
   }
 
+  // 形式が明らかに不正なものは microCMS へ問い合わせる前に弾く。
+  // 外部からの任意入力で microCMS API を無制限に叩かせ、クォータ消費・存在確認オラクルに
+  // されるのを軽減する（microCMS の contentId / draftKey は英数と一部記号のみ）。
+  const ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
+  const DRAFT_KEY_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
+  if (!ID_PATTERN.test(contentId) || !DRAFT_KEY_PATTERN.test(draftKey)) {
+    return new NextResponse('Invalid draftKey or contentId', { status: 401 });
+  }
+
   // ドラフトキーの検証（存在しない/不正なら401）
   try {
     await client.getListDetail<Blog>({ endpoint: 'blog', contentId, queries: { draftKey } });
