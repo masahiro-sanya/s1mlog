@@ -18,12 +18,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          # package-lock.json は .gitignore で管理対象外のため package.json をキャッシュキーにする
-          cache-dependency-path: front/package.json
+          cache-dependency-path: front/package-lock.json
 
-      # ロックファイルをコミットしていないため npm ci ではなく npm install を使う
+      # ロックファイルをコミット管理しているため再現ビルドを担保する npm ci を使う
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Lint
         run: npm run lint

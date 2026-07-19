@@ -79,6 +79,61 @@ describe('formatRichText', () => {
     });
   });
 
+  describe('サニタイズ（XSS 対策）', () => {
+    it('script タグを除去する', () => {
+      const html = '<p>本文</p><script>alert(document.cookie)</script>';
+      const result = formatRichText(html);
+      expect(result).toContain('本文');
+      expect(result).not.toContain('<script');
+      expect(result).not.toContain('alert(document.cookie)');
+    });
+
+    it('イベントハンドラ属性（onerror 等）を除去する', () => {
+      const html = '<img src="x" onerror="alert(1)" alt="test">';
+      const result = formatRichText(html);
+      expect(result).toContain('<img');
+      expect(result).not.toContain('onerror');
+    });
+
+    it('javascript: スキームのリンクを除去する', () => {
+      const html = '<a href="javascript:alert(1)">クリック</a>';
+      const result = formatRichText(html);
+      expect(result).not.toContain('javascript:');
+    });
+
+    it('未許可ホストの iframe は src を除去して読み込ませない', () => {
+      const html = '<iframe src="https://evil.example.com/x"></iframe>';
+      const result = formatRichText(html);
+      // 危険な src が残らない（空 iframe が残っても外部リソースは読み込まれない）
+      expect(result).not.toContain('evil.example.com');
+      expect(result).not.toMatch(/src=/);
+    });
+
+    it('許可ホスト（YouTube）の iframe は維持する', () => {
+      const html = '<iframe src="https://www.youtube.com/embed/abc123" allowfullscreen></iframe>';
+      const result = formatRichText(html);
+      expect(result).toContain('<iframe');
+      expect(result).toContain('www.youtube.com/embed/abc123');
+    });
+
+    it('正当な書式・コードブロック・見出し・表は温存する', () => {
+      const html = [
+        '<h2>見出し</h2>',
+        '<p><strong>太字</strong>と<em>斜体</em></p>',
+        '<ul><li>項目</li></ul>',
+        '<table><tbody><tr><td>セル</td></tr></tbody></table>',
+        '<pre><code class="language-javascript">const a = 1;</code></pre>',
+      ].join('');
+      const result = formatRichText(html);
+      expect(result).toContain('<h2');
+      expect(result).toContain('<strong>太字</strong>');
+      expect(result).toContain('<em>斜体</em>');
+      expect(result).toContain('<td>セル</td>');
+      // code の language クラスが残りハイライトが効く
+      expect(result).toContain('hljs-keyword');
+    });
+  });
+
   describe('アフィリエイトリンク', () => {
     it('アフィリエイトURLに rel="sponsored nofollow noopener" と target="_blank" を付与する', () => {
       const html = `<p><a href="https://amzn.to/abc123">商品リンク</a></p>`;
