@@ -61,5 +61,9 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    // http で配信するため CSP の upgrade-insecure-requests を外す（WebKit が localhost まで
+    // https へ上げてしまい、CSS / JS / 画面遷移が全部落ちる）。next dev はここで効くが、
+    // next start はビルド時に headers() が確定するため CI 側の build ステップにも同じ値を渡す。
+    env: { ALLOW_INSECURE_HTTP: '1' },
   },
 });
