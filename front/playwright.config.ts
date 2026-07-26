@@ -55,7 +55,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    // CI では本番ビルド（ワークフロー側で build 済み）を起動して検証する。
+    // dev サーバーはオンデマンドコンパイルで初回表示が遅く、配信物も本番と別物になるため。
+    command: process.env.CI ? 'npm run start' : 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

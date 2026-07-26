@@ -36,3 +36,53 @@ jobs:
       # microCMS の API キーがなくてもフォールバックでビルドが通ることを保証する
       - name: Build
         run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    # lint / 型 / ユニットテストが通ってから、時間のかかる E2E を回す
+    needs: ci
+    defaults:
+      run:
+        working-directory: front
+    env:
+      MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+      MICROCMS_SERVICE_DOMAIN: ${{ secrets.MICROCMS_SERVICE_DOMAIN }}
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # E2E は実際の記事が並ぶことを前提にしているため、キーが無いと必ず落ちる。
+      # 原因が分かる形で先に止める。
+      - name: Check microCMS credentials
+        run: |
+          if [ -z "$MICROCMS_API_KEY" ] || [ -z "$MICROCMS_SERVICE_DOMAIN" ]; then
+            echo "::error::E2E には microCMS の認証情報が必要です。Settings > Secrets and variables > Actions に MICROCMS_API_KEY と MICROCMS_SERVICE_DOMAIN を登録してください。"
+            exit 1
+          fi
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # playwright.config.ts の webServer は CI では npm run start を使うため、先にビルドしておく
+      - name: Build
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: front/playwright-report/
+          retention-days: 7

@@ -1,0 +1,39 @@
+version: 2
+
+updates:
+  # アプリ本体の npm 依存。package.json / package-lock.json は front 配下にある
+  - package-ecosystem: npm
+    directory: /front
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # パッチ / マイナーは 1 本の PR にまとめ、レビュー回数を抑える。
+      # メジャーは破壊的変更を含みうるため個別 PR のままにする。
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # ci.yml で使う actions/checkout・setup-node 等のバージョン更新
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      include: scope

@@ -1,0 +1,80 @@
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 28px;
+  padding: 28px 0;
+  align-items: start;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.thumbnail {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-light);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.line {
+  height: 1.05rem;
+  border-radius: 4px;
+}
+
+.lineShort {
+  width: 40%;
+}
+
+.lineMedium {
+  width: 70%;
+}
+
+/* スケルトンの下地。読み込み中であることだけを伝え、内容は推測させない */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-sub) 25%,
+    var(--color-bg-soft) 50%,
+    var(--color-bg-sub) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+    background: var(--color-bg-sub);
+  }
+}
+
+@media (max-width: 640px) {
+  .item {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 20px 0;
+  }
+}
