@@ -22,6 +22,18 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # eslint 10 は eslint-config-next が同梱する eslint-plugin-react 7.37.5 が未対応。
+      # eslint 10 で削除された context.getFilename() を呼ぶため、rule の読み込み時点で落ちる。
+      # eslint-plugin-react の peerDependencies に eslint 10 が入ったら、この ignore を外す。
+      - dependency-name: eslint
+        versions:
+          - '>=10'
+      # typescript 7 は @typescript-eslint 8.x の peer が typescript <6.1.0 のため npm ci が解決できない。
+      # typescript-eslint が typescript 7 対応版（peer 緩和）を出したら、この ignore を外す。
+      - dependency-name: typescript
+        versions:
+          - '>=7'
 
   # ci.yml で使う actions/checkout・setup-node 等のバージョン更新
   - package-ecosystem: github-actions
