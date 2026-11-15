@@ -72,7 +72,7 @@ describe('microCMS API', () => {
       });
     });
 
-    it('ユーザー指定の filters は publishedAt[exists] と AND 結合される', async () => {
+    it('ユーザー指定の filters は括弧で囲んで publishedAt[exists] と AND 結合される', async () => {
       const queries = { filters: 'tags[contains]tag1' };
       const mockClient = getMockClient();
       mockClient.getList.mockResolvedValue({ contents: [] });
@@ -81,7 +81,22 @@ describe('microCMS API', () => {
 
       expect(mockClient.getList).toHaveBeenCalledWith({
         endpoint: 'blog',
-        queries: { filters: 'publishedAt[exists][and]tags[contains]tag1' },
+        queries: { filters: 'publishedAt[exists][and](tags[contains]tag1)' },
+      });
+    });
+
+    it('[or] を含む filters でも下書きが漏れないよう全体を括弧で囲む', async () => {
+      const queries = { filters: 'tags[contains]tag1[or]tags[contains]tag2' };
+      const mockClient = getMockClient();
+      mockClient.getList.mockResolvedValue({ contents: [] });
+
+      await getList(queries);
+
+      expect(mockClient.getList).toHaveBeenCalledWith({
+        endpoint: 'blog',
+        queries: {
+          filters: 'publishedAt[exists][and](tags[contains]tag1[or]tags[contains]tag2)',
+        },
       });
     });
 
@@ -107,6 +122,7 @@ describe('microCMS API', () => {
         id: 'detail-ok',
         title: 'Test Blog',
         content: 'Content',
+        publishedAt: '2026-01-01T00:00:00.000Z',
       };
 
       const mockClient = getMockClient();
@@ -122,17 +138,27 @@ describe('microCMS API', () => {
       expect(result).toEqual(mockDetail);
     });
 
-    it('draftKey などのクエリを渡せる', async () => {
+    it('draftKey を渡すと未公開の下書きも返す', async () => {
       const mockClient = getMockClient();
       mockClient.getListDetail.mockResolvedValue({ id: 'detail-draft' });
 
-      await getDetail('detail-draft', { draftKey: 'abc' });
+      const result = await getDetail('detail-draft', { draftKey: 'abc' });
 
       expect(mockClient.getListDetail).toHaveBeenCalledWith({
         endpoint: 'blog',
         contentId: 'detail-draft',
         queries: { draftKey: 'abc' },
       });
+      expect(result).toEqual({ id: 'detail-draft' });
+    });
+
+    it('draftKey なしで未公開の記事を取得すると null を返す', async () => {
+      const mockClient = getMockClient();
+      mockClient.getListDetail.mockResolvedValue({ id: 'detail-unpublished', title: 'Draft' });
+
+      const result = await getDetail('detail-unpublished');
+
+      expect(result).toBeNull();
     });
 
     it('エラー時は null を返す（404 判断は呼び出し側）', async () => {
