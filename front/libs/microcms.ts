@@ -67,8 +67,10 @@ const DEFAULT_WRITER: Writer = {
 // 現状の API キーは権限上下書きも返してしまうため、フロント側で明示的に弾く必要がある。
 const PUBLISHED_FILTER = 'publishedAt[exists]';
 
+// ユーザー指定の filters は括弧で囲む。[and] と [or] の優先順位は公式ドキュメントに書かれていない。
+// 囲まないと `[or]` を含む条件（関連記事のタグ OR 検索など）で下書きが返ることを、実 API で確かめた。
 const mergeWithPublishedFilter = (userFilters?: string): string =>
-  userFilters ? `${PUBLISHED_FILTER}[and]${userFilters}` : PUBLISHED_FILTER;
+  userFilters ? `${PUBLISHED_FILTER}[and](${userFilters})` : PUBLISHED_FILTER;
 
 // ブログ一覧を取得
 export const getList = async (queries?: MicroCMSQueries) => {
@@ -95,11 +97,16 @@ export const getDetail = cache(
     }
 
     try {
-      return await client.getListDetail<Blog>({
+      const article = await client.getListDetail<Blog>({
         endpoint: 'blog',
         contentId,
         queries,
       });
+      // API キーが下書きも返すため、draftKey なしで未公開の記事を開いたときは見つからない扱いにする
+      if (!queries?.draftKey && !article.publishedAt) {
+        return null;
+      }
+      return article;
     } catch (error) {
       console.error(`Error fetching blog detail (${contentId}):`, error);
       return null;
