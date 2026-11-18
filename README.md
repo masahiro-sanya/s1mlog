@@ -113,7 +113,7 @@ npm run dev
 - Pull Requestごとにプレビュー環境が作成
 
 ##### microCMS → Vercel Webhook 連携（任意）
-各ページは ISR（`revalidate = 60`）で配信しているため、microCMS で公開・更新した内容は**最大60秒で自動反映**される。即時反映したい場合や、サイトマップ（ビルド時生成）を更新したい場合のみ、以下の Deploy Hook を設定する。
+各ページは ISR（`revalidate = 60`）で配信しているため、microCMS で公開・更新した内容は**最大60秒で自動反映**される。即時反映したい場合のみ、以下の Deploy Hook を設定する。
 
 1. **Vercel: Deploy Hook を発行**
    - Vercel ダッシュボード → 該当プロジェクト → Settings → Git → "Deploy Hooks"
