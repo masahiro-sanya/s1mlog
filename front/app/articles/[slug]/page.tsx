@@ -83,7 +83,8 @@ export default async function Page({ params }: Props) {
   }
 
   const url = `/articles/${slug}`;
-  const fullUrl = `${SITE_URL}${url}`;
+  // 構造化データは trailingSlash: true に合わせて末尾 / 付き（canonical / og:url は Next が付与）
+  const fullUrl = `${SITE_URL}${url}/`;
   const imageUrl = data.thumbnail?.url || `${SITE_URL}/ogp.png`;
 
   const blogPostingSchema = {

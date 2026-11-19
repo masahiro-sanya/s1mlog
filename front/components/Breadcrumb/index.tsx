@@ -12,6 +12,10 @@ type Props = {
   items: Crumb[];
 };
 
+// 構造化データの URL は trailingSlash: true に合わせて末尾 / を付ける（クエリ・ハッシュ付きは触らない）
+const toSchemaUrl = (href: string): string =>
+  /[?#]/.test(href) || href.endsWith('/') ? `${SITE_URL}${href}` : `${SITE_URL}${href}/`;
+
 export default function Breadcrumb({ items }: Props) {
   if (items.length === 0) return null;
 
@@ -19,7 +23,7 @@ export default function Breadcrumb({ items }: Props) {
     '@type': 'ListItem',
     position: index + 1,
     name: c.name,
-    ...(c.href ? { item: `${SITE_URL}${c.href}` } : {}),
+    ...(c.href ? { item: toSchemaUrl(c.href) } : {}),
   }));
 
   const schema = {
