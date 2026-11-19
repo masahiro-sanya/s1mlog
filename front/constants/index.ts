@@ -13,6 +13,10 @@ export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || ''; // �
 // 本番 Vercel には NEXT_PUBLIC_GA_MEASUREMENT_ID の設定が必須。
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
+// Cookie 同意バナーの選択（'granted' | 'denied'）を保存する localStorage のキー。
+// layout の consent default と CookieConsent の両方が読む。
+export const CONSENT_STORAGE_KEY = 's1mlog_consent_v1';
+
 // AdSense 広告スロット ID（未設定のスロットは描画されない）
 export const ADSENSE_SLOTS = {
   sidebar: process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR || '',

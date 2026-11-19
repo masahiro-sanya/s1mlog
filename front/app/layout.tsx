@@ -4,6 +4,7 @@ import { getTagList, getWriter } from '@/libs/microcms';
 import {
   ADSENSE_CLIENT,
   ADSENSE_SLOTS,
+  CONSENT_STORAGE_KEY,
   GA_MEASUREMENT_ID,
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -95,16 +96,24 @@ export default async function RootLayout({ children }: Props) {
     // data-scroll-behavior: globals.css の scroll-behavior: smooth をルート遷移時も意図通りに扱う
     <html lang="ja" data-scroll-behavior="smooth">
       <head>
+        {/*
+          アクセス解析だけ既定で許可する。広告系は同意があるまで拒否のまま。
+          以前バナーで「拒否」を選んだ人は、ここで保存値を読んで最初から denied にする
+          （CookieConsent の update はハイドレーション後で、wait_for_update の 500ms に
+          間に合わないと解析 Cookie が置かれてしまう）。
+        */}
         <Script id="ga-consent-default" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             window.gtag = gtag;
+            var savedConsent = null;
+            try { savedConsent = localStorage.getItem('${CONSENT_STORAGE_KEY}'); } catch (e) {}
             gtag('consent', 'default', {
               ad_storage: 'denied',
               ad_user_data: 'denied',
               ad_personalization: 'denied',
-              analytics_storage: 'denied',
+              analytics_storage: savedConsent === 'denied' ? 'denied' : 'granted',
               wait_for_update: 500,
             });
           `}

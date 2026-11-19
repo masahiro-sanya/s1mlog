@@ -382,7 +382,9 @@ describe('microCMS API', () => {
         updatedAt: 'u',
         publishedAt: 'p',
       }));
-      const page2 = [{ id: 'id-100', updatedAt: 'u2', publishedAt: 'p2' }];
+      const page2 = [
+        { id: 'id-100', updatedAt: 'u2', publishedAt: 'p2', tags: [{ id: 't1' }, null] },
+      ];
       const mockClient = getMockClient();
       mockClient.getList
         .mockResolvedValueOnce({ contents: page1, totalCount: 101, offset: 0, limit: 100 })
@@ -391,12 +393,18 @@ describe('microCMS API', () => {
       const result = await getAllContentMeta('blog');
 
       expect(result).toHaveLength(101);
-      expect(result[100]).toEqual({ id: 'id-100', updatedAt: 'u2', publishedAt: 'p2' });
+      expect(result[0].tagIds).toEqual([]);
+      expect(result[100]).toEqual({
+        id: 'id-100',
+        updatedAt: 'u2',
+        publishedAt: 'p2',
+        tagIds: ['t1'],
+      });
       expect(mockClient.getList).toHaveBeenCalledTimes(2);
       expect(mockClient.getList).toHaveBeenNthCalledWith(1, {
         endpoint: 'blog',
         queries: {
-          fields: 'id,updatedAt,publishedAt',
+          fields: 'id,updatedAt,publishedAt,tags.id',
           limit: 100,
           offset: 0,
           filters: 'publishedAt[exists]',
@@ -405,7 +413,7 @@ describe('microCMS API', () => {
       expect(mockClient.getList).toHaveBeenNthCalledWith(2, {
         endpoint: 'blog',
         queries: {
-          fields: 'id,updatedAt,publishedAt',
+          fields: 'id,updatedAt,publishedAt,tags.id',
           limit: 100,
           offset: 100,
           filters: 'publishedAt[exists]',
