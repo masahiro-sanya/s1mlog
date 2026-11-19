@@ -7,9 +7,10 @@ import PublishedDate from '../Date';
 
 type Props = {
   article: Article;
+  priority?: boolean;
 };
 
-export default function ArticleListItem({ article }: Props) {
+export default function ArticleListItem({ article, priority = false }: Props) {
   return (
     <li className={styles.list}>
       <Link href={`/articles/${article.id}`} className={styles.link}>
@@ -29,7 +30,9 @@ export default function ArticleListItem({ article }: Props) {
                 src={`${article.thumbnail.url}?w=720`}
                 alt=""
                 className={styles.image}
-                loading="lazy"
+                loading={priority ? 'eager' : 'lazy'}
+                fetchPriority={priority ? 'high' : undefined}
+                decoding="async"
                 width={article.thumbnail.width}
                 height={article.thumbnail.height}
               />

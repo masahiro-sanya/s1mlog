@@ -8,11 +8,19 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: front
+    outputs:
+      playwright-version: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@v7
+
+      # e2e のコンテナのタグを lockfile の @playwright/test に揃える（Dependabot が上げても自動で追従する）
+      - name: Read Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
         with:
@@ -39,6 +47,13 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # ブラウザと apt 依存入りのイメージを使い、--with-deps の apt 取得（遅い回線で30分かかった）を避ける。
+    # タグは ci ジョブが lockfile から読んだ @playwright/test のバージョン。
+    # apt を使わないので、イメージとパッケージがずれると OS 依存が足りず落ちる。
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.ci.outputs.playwright-version }}-noble
+      options: --user 1001
     # lint / 型 / ユニットテストが通ってから、時間のかかる E2E を回す
     needs: ci
     defaults:
@@ -72,7 +87,7 @@ jobs:
           fi
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install
 
       # playwright.config.ts の webServer は CI では npm run start を使うため、先にビルドしておく
       - name: Build
@@ -81,8 +96,9 @@ jobs:
       - name: Run E2E tests
         run: npx playwright test
 
+      # timeout-minutes 超過も cancelled 扱いになるため always() にし、詰まった回のレポートも残す
       - name: Upload Playwright report
-        if: ${{ !cancelled() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report

@@ -17,7 +17,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { current } = await params;
   return {
-    title: `${current}ページ目`,
+    title: `記事一覧（${current}ページ目）`,
     alternates: { canonical: `/p/${current}` },
     robots: { index: false, follow: true },
   };

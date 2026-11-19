@@ -24,7 +24,7 @@ export default function Article({ data }: Props) {
   const isSplit = Boolean(firstHalfHtml);
 
   return (
-    <main className={styles.main}>
+    <article className={styles.main}>
       <div className={styles.header}>
         <h1 className={styles.title}>{data.title || 'Untitled'}</h1>
         <TagList tags={data.tags || []} />
@@ -66,6 +66,7 @@ export default function Article({ data }: Props) {
             src={data.thumbnail.url}
             alt={data.title || ''}
             className={styles.thumbnail}
+            fetchPriority="high"
             width={data.thumbnail.width || 960}
             height={data.thumbnail.height || 504}
           />
@@ -96,6 +97,6 @@ export default function Article({ data }: Props) {
           <AdSlot slot={AD_SLOT_ARTICLE_BOTTOM} format="auto" />
         </div>
       )}
-    </main>
+    </article>
   );
 }

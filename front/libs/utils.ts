@@ -57,6 +57,8 @@ const AFFILIATE_HOST_PATTERNS = [
   'felmat.net',
 ];
 
+const MICROCMS_IMAGE_HOST = 'images.microcms-assets.io';
+
 const isAffiliateUrl = (url: string): boolean => {
   try {
     const host = new URL(url).hostname.toLowerCase();
@@ -196,6 +198,36 @@ export const formatRichText = (richText: string): string => {
       $a.attr('rel', merged.join(' '));
       if (!$a.attr('target')) $a.attr('target', '_blank');
       $a.attr('data-affiliate', 'true');
+    });
+
+    // 本文の画像: 遅延読み込み・非同期デコード。microCMS 配信の静止画は webp + srcset に最適化する
+    // （sizes は本文幅 --content-max: 720px = app/globals.css に合わせる）
+    $('img').each((_, elm) => {
+      const $img = $(elm);
+      if (!$img.attr('loading')) $img.attr('loading', 'lazy');
+      if (!$img.attr('decoding')) $img.attr('decoding', 'async');
+
+      const src = $img.attr('src') || '';
+      if ($img.attr('srcset') || src.includes('?')) return;
+      let url: URL;
+      try {
+        url = new URL(src);
+      } catch {
+        return;
+      }
+      if (url.hostname !== MICROCMS_IMAGE_HOST || /\.(gif|svg)$/i.test(url.pathname)) return;
+      // 生の src ではなく正規化した URL を使う（空白が残ると srcset の区切りと誤読され、
+      // #fragment の後ろにクエリを足すと変換パラメータが効かない）
+      const webp = (w: number) => `${url.origin}${url.pathname}?fm=webp&fit=max&w=${w}`;
+      // fit=max は拡大しないので、幅記述子は元画像の width 以下に限る。
+      // width が分からない画像に 1600w と宣言すると、小さい画像が縮んで表示されるため srcset を付けない。
+      const width = Number($img.attr('width'));
+      const top = Number.isFinite(width) && width > 0 ? Math.min(width, 1600) : 1600;
+      $img.attr('src', webp(top));
+      if (Number.isFinite(width) && width > 800) {
+        $img.attr('srcset', `${webp(800)} 800w, ${webp(top)} ${top}w`);
+        $img.attr('sizes', '(max-width: 720px) 100vw, 720px');
+      }
     });
 
     return $.html(); // 変更されたHTMLを返す

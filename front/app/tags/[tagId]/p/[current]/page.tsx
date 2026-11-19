@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getAllContentIds, getList, LIST_FIELDS } from '@/libs/microcms';
+import { getAllContentIds, getList, getTag, LIST_FIELDS } from '@/libs/microcms';
 import { buildPageParams, parsePageNumber } from '@/libs/pagination';
 import { LIMIT } from '@/constants';
 import Pagination from '@/components/Pagination';
@@ -17,8 +17,9 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tagId, current } = await params;
+  const tag = await getTag(tagId);
   return {
-    title: `${current}ページ目`,
+    title: tag ? `${tag.name} の記事一覧（${current}ページ目）` : `${current}ページ目`,
     alternates: { canonical: `/tags/${tagId}/p/${current}` },
     robots: { index: false, follow: true },
   };

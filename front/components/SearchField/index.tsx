@@ -24,6 +24,7 @@ export default function SearchField() {
   return (
     <input
       type="search"
+      aria-label="記事を検索"
       name="q"
       ref={inputRef}
       className={styles.search}

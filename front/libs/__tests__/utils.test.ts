@@ -180,4 +180,87 @@ describe('formatRichText', () => {
       expect(result).not.toMatch(/data-affiliate/);
     });
   });
+
+  describe('本文の画像', () => {
+    const base = 'https://images.microcms-assets.io/assets/abc/def/pic';
+
+    it('microCMS の画像は webp 化し srcset / sizes / lazy を付ける', () => {
+      const result = formatRichText(`<img src="${base}.png" width="1800" height="1350">`);
+
+      expect(result).toContain(`src="${base}.png?fm=webp&amp;fit=max&amp;w=1600"`);
+      expect(result).toContain(
+        `srcset="${base}.png?fm=webp&amp;fit=max&amp;w=800 800w, ${base}.png?fm=webp&amp;fit=max&amp;w=1600 1600w"`,
+      );
+      expect(result).toContain('sizes="(max-width: 720px) 100vw, 720px"');
+      expect(result).toContain('loading="lazy"');
+      expect(result).toContain('decoding="async"');
+      expect(result).toContain('width="1800"');
+      expect(result).toContain('height="1350"');
+    });
+
+    it('元画像が 1600px 未満なら、その幅を上限の候補にする', () => {
+      const result = formatRichText(`<img src="${base}.png" width="1200" height="900">`);
+
+      expect(result).toContain(`src="${base}.png?fm=webp&amp;fit=max&amp;w=1200"`);
+      expect(result).toContain(
+        `srcset="${base}.png?fm=webp&amp;fit=max&amp;w=800 800w, ${base}.png?fm=webp&amp;fit=max&amp;w=1200 1200w"`,
+      );
+    });
+
+    it('元画像が 800px 以下なら srcset を付けず、元の幅で webp 化する', () => {
+      const result = formatRichText(`<img src="${base}.png" width="300" height="200">`);
+
+      expect(result).toContain(`src="${base}.png?fm=webp&amp;fit=max&amp;w=300"`);
+      expect(result).not.toContain('srcset');
+      expect(result).not.toContain('sizes=');
+    });
+
+    it('width が無い画像は srcset を付けない（実寸が分からず縮んで表示されるため）', () => {
+      const result = formatRichText(`<img src="${base}.png">`);
+
+      expect(result).toContain(`src="${base}.png?fm=webp&amp;fit=max&amp;w=1600"`);
+      expect(result).not.toContain('srcset');
+    });
+
+    it('クエリ付きの microCMS 画像は src を書き換えない', () => {
+      const result = formatRichText(`<img src="${base}.png?w=300">`);
+
+      expect(result).toContain(`src="${base}.png?w=300"`);
+      expect(result).not.toContain('srcset');
+      expect(result).toContain('loading="lazy"');
+    });
+
+    it('gif は変換せず lazy / async のみ付ける', () => {
+      const result = formatRichText(`<img src="${base}.gif">`);
+
+      expect(result).toContain(`src="${base}.gif"`);
+      expect(result).not.toContain('srcset');
+      expect(result).toContain('loading="lazy"');
+      expect(result).toContain('decoding="async"');
+    });
+
+    it('外部ホストの画像は変換せず lazy / async のみ付ける', () => {
+      const result = formatRichText('<img src="https://example.com/a.png">');
+
+      expect(result).toContain('src="https://example.com/a.png"');
+      expect(result).not.toContain('srcset');
+      expect(result).toContain('loading="lazy"');
+      expect(result).toContain('decoding="async"');
+    });
+
+    it('ファイル名の空白はエンコードし、srcset を壊さない', () => {
+      const result = formatRichText(`<img src="${base} 1.png" width="1800">`);
+
+      expect(result).toContain(
+        `srcset="${base}%201.png?fm=webp&amp;fit=max&amp;w=800 800w, ${base}%201.png?fm=webp&amp;fit=max&amp;w=1600 1600w"`,
+      );
+    });
+
+    it('既存の loading 属性は上書きしない', () => {
+      const result = formatRichText(`<img src="${base}.png" loading="eager">`);
+
+      expect(result).toContain('loading="eager"');
+      expect(result).not.toContain('loading="lazy"');
+    });
+  });
 });
