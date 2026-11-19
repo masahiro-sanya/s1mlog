@@ -28,7 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getAllContentMeta('tags'),
   ]);
   const articles = settle(blogResult, 'blog');
-  const tags = settle(tagsResult, 'tags');
+  const allTags = settle(tagsResult, 'tags');
+  // 公開記事が 1 本も付いていないタグは、中身の無い一覧ページになるので載せない。
+  // blog の取得に失敗したとき（ビルド中のみここまで来る）は判定できないので、絞らずに全部載せる。
+  const usedTagIds = new Set(articles.flatMap((a) => a.tagIds ?? []));
+  const tags =
+    blogResult.status === 'fulfilled' ? allTags.filter((t) => usedTagIds.has(t.id)) : allTags;
 
   return [
     ...staticEntries(),

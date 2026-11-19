@@ -17,10 +17,15 @@ const mockContents = () =>
             id: 'a1',
             updatedAt: '2026-11-02T00:00:00.000Z',
             publishedAt: '2026-11-01T00:00:00.000Z',
+            tagIds: ['t1'],
           },
-          { id: 'a2', publishedAt: '2026-11-03T00:00:00.000Z' },
+          { id: 'a2', publishedAt: '2026-11-03T00:00:00.000Z', tagIds: [] },
         ]
-      : [{ id: 't1', updatedAt: '2026-10-01T00:00:00.000Z' }],
+      : [
+          { id: 't1', updatedAt: '2026-10-01T00:00:00.000Z' },
+          // 公開記事が付いていないタグ。サイトマップには載らない。
+          { id: 't-unused', updatedAt: '2026-10-02T00:00:00.000Z' },
+        ],
   );
 
 describe('sitemap', () => {
@@ -52,6 +57,15 @@ describe('sitemap', () => {
       `${SITE_URL}/tags/t1/`,
     ]);
     expect(urls.some((u) => /\/search|feed\.xml|\/p\//.test(u))).toBe(false);
+  });
+
+  it('公開記事が付いていないタグは載せない', async () => {
+    mockContents();
+
+    const urls = (await sitemap()).map((e) => e.url);
+
+    expect(urls).toContain(`${SITE_URL}/tags/t1/`);
+    expect(urls).not.toContain(`${SITE_URL}/tags/t-unused/`);
   });
 
   it('lastModified は updatedAt、無ければ publishedAt を使う', async () => {
@@ -97,6 +111,21 @@ describe('sitemap', () => {
 
     expect(urls).toContain(`${SITE_URL}/articles/a1/`);
     expect(urls.some((u) => u.includes('/tags/'))).toBe(false);
+    expect(console.warn).toHaveBeenCalled();
+  });
+
+  it('ビルド中に blog だけ失敗したら、タグは絞らずに全部載せる', async () => {
+    process.env.NEXT_PHASE = 'phase-production-build';
+    mockMeta.mockImplementation(async (endpoint: string) => {
+      if (endpoint === 'blog') throw new Error('API Error');
+      return [{ id: 't1' }, { id: 't-unused' }];
+    });
+
+    const urls = (await sitemap()).map((e) => e.url);
+
+    expect(urls.some((u) => u.includes('/articles/'))).toBe(false);
+    expect(urls).toContain(`${SITE_URL}/tags/t1/`);
+    expect(urls).toContain(`${SITE_URL}/tags/t-unused/`);
     expect(console.warn).toHaveBeenCalled();
   });
 

@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CONSENT_STORAGE_KEY } from '@/constants';
 import styles from './index.module.css';
-
-const STORAGE_KEY = 's1mlog_consent_v1';
 
 type ConsentValue = 'granted' | 'denied';
 type Visibility = 'pending' | 'visible' | 'hidden';
@@ -34,7 +33,7 @@ function applyConsent(value: ConsentValue) {
 function readInitialState(): Visibility {
   if (typeof window === 'undefined') return 'pending';
   try {
-    const saved = localStorage.getItem(STORAGE_KEY) as ConsentValue | null;
+    const saved = localStorage.getItem(CONSENT_STORAGE_KEY) as ConsentValue | null;
     if (saved === 'granted' || saved === 'denied') {
       applyConsent(saved);
       return 'hidden';
@@ -56,7 +55,7 @@ export default function CookieConsent() {
 
   const onChoose = (value: ConsentValue) => {
     try {
-      localStorage.setItem(STORAGE_KEY, value);
+      localStorage.setItem(CONSENT_STORAGE_KEY, value);
     } catch {
       /* ignore */
     }
@@ -69,7 +68,8 @@ export default function CookieConsent() {
   return (
     <div className={styles.banner} role="dialog" aria-live="polite" aria-label="Cookie同意">
       <p className={styles.text}>
-        当サイトはアクセス解析・広告配信のために Cookie を使用します。詳細は
+        当サイトはアクセス解析のために Cookie
+        を使用しています。「同意する」を選ぶと広告配信にも使用し、「拒否」を選ぶとアクセス解析での使用もやめます。詳細は
         <a className={styles.link} href="/privacy-policy">
           プライバシーポリシー
         </a>

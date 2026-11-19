@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
       <h2 className={styles.sectionTitle}>アクセス解析について</h2>
       <p>
         当サイトでは、Google アナリティクスを利用してサイトの利用状況を分析しています。Google
-        アナリティクスはCookieを使用して匿名のトラフィックデータを収集します。詳細は、
+        アナリティクスはCookieを使用して匿名のトラフィックデータを収集します。アクセス解析用のCookieは初回アクセス時から有効で、画面下部のバナーで「拒否」を選ぶと、以後は使用しません。詳細は、
         <a
           href="https://marketingplatform.google.com/about/analytics/terms/jp/"
           target="_blank"
@@ -66,7 +66,7 @@ export default function PrivacyPolicyPage() {
       <h2 className={styles.sectionTitle}>プライバシーポリシーの変更</h2>
       <p>本ポリシーの内容は、法令の変更や運用状況に応じて、予告なく変更される場合があります。</p>
 
-      <p className={styles.updatedAt}>制定日：2024年9月</p>
+      <p className={styles.updatedAt}>制定日：2024年9月 ／ 改定日：2026年11月</p>
     </div>
   );
 }

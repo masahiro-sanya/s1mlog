@@ -222,6 +222,8 @@ export type ContentMeta = {
   id: string;
   updatedAt?: string;
   publishedAt?: string;
+  // blog のときだけ入る。その記事に付いているタグの ID。
+  tagIds?: string[];
 };
 
 // 全コンテンツのメタ情報を取得する（sitemap 用）。
@@ -232,7 +234,22 @@ export const getAllContentMeta = async (endpoint: 'blog' | 'tags'): Promise<Cont
     return [];
   }
 
-  const filters = endpoint === 'blog' ? mergeWithPublishedFilter() : undefined;
-  const contents = await fetchAllPages<object>(endpoint, 'id,updatedAt,publishedAt', filters);
-  return contents.map((c) => ({ id: c.id, updatedAt: c.updatedAt, publishedAt: c.publishedAt }));
+  if (endpoint === 'tags') {
+    const contents = await fetchAllPages<object>(endpoint, 'id,updatedAt,publishedAt');
+    return contents.map((c) => ({ id: c.id, updatedAt: c.updatedAt, publishedAt: c.publishedAt }));
+  }
+
+  // blog は、記事が付いているタグを呼び出し側で判定できるよう tags.id も取る。
+  const contents = await fetchAllPages<{ tags?: ({ id: string } | null)[] }>(
+    endpoint,
+    'id,updatedAt,publishedAt,tags.id',
+    mergeWithPublishedFilter(),
+  );
+  return contents.map((c) => ({
+    id: c.id,
+    updatedAt: c.updatedAt,
+    publishedAt: c.publishedAt,
+    // 参照先のタグが消えていると要素が null で返ることがあるので除く。
+    tagIds: (c.tags ?? []).flatMap((t) => (t ? [t.id] : [])),
+  }));
 };
