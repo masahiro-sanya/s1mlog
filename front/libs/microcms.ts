@@ -169,10 +169,35 @@ export const getWriter = async (): Promise<Writer | null> => {
   }
 };
 
-// 全コンテンツの ID を取得する（generateStaticParams 用）。
 // microCMS の 1 リクエスト上限である 100 件ずつページングして全件取得する。
 const ALL_IDS_PAGE_SIZE = 100;
 
+// 全件をページングして取得する。失敗は throw する（握りつぶすかどうかは呼び出し側で決める）。
+const fetchAllPages = async <T>(
+  endpoint: 'blog' | 'tags',
+  fields: string,
+  filters?: string,
+): Promise<(T & MicroCMSContentId & MicroCMSDate)[]> => {
+  const contents: (T & MicroCMSContentId & MicroCMSDate)[] = [];
+  let offset = 0;
+  for (;;) {
+    const res = await client.getList<T>({
+      endpoint,
+      queries: {
+        fields,
+        limit: ALL_IDS_PAGE_SIZE,
+        offset,
+        ...(filters ? { filters } : {}),
+      },
+    });
+    contents.push(...res.contents);
+    offset += ALL_IDS_PAGE_SIZE;
+    if (offset >= res.totalCount) break;
+  }
+  return contents;
+};
+
+// 全コンテンツの ID を取得する（generateStaticParams 用）。
 export const getAllContentIds = async (
   endpoint: 'blog' | 'tags',
   filters?: string,
@@ -184,25 +209,30 @@ export const getAllContentIds = async (
   const mergedFilters = endpoint === 'blog' ? mergeWithPublishedFilter(filters) : filters;
 
   try {
-    const ids: string[] = [];
-    let offset = 0;
-    for (;;) {
-      const res = await client.getList<Record<string, never>>({
-        endpoint,
-        queries: {
-          fields: 'id',
-          limit: ALL_IDS_PAGE_SIZE,
-          offset,
-          ...(mergedFilters ? { filters: mergedFilters } : {}),
-        },
-      });
-      ids.push(...res.contents.map((c) => c.id));
-      offset += ALL_IDS_PAGE_SIZE;
-      if (offset >= res.totalCount) break;
-    }
-    return ids;
+    const contents = await fetchAllPages<object>(endpoint, 'id', mergedFilters);
+    return contents.map((c) => c.id);
   } catch (error) {
     console.error(`Error fetching all content ids (${endpoint}):`, error);
     return [];
   }
+};
+
+// サイトマップ用のメタ情報（id と更新日時）
+export type ContentMeta = {
+  id: string;
+  updatedAt?: string;
+  publishedAt?: string;
+};
+
+// 全コンテンツのメタ情報を取得する（sitemap 用）。
+// 取得失敗は throw する（「失敗」と「0 件」を区別するため。フォールバックは呼び出し側で決める）。
+// 未設定（isConfigured() が false）は失敗ではないので空配列を返す。
+export const getAllContentMeta = async (endpoint: 'blog' | 'tags'): Promise<ContentMeta[]> => {
+  if (!isConfigured()) {
+    return [];
+  }
+
+  const filters = endpoint === 'blog' ? mergeWithPublishedFilter() : undefined;
+  const contents = await fetchAllPages<object>(endpoint, 'id,updatedAt,publishedAt', filters);
+  return contents.map((c) => ({ id: c.id, updatedAt: c.updatedAt, publishedAt: c.publishedAt }));
 };

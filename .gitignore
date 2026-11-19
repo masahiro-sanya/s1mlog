@@ -61,7 +61,3 @@ AGENTS.md
 # article assets (thumbnail HTML/PNG generation) — local-only
 .article-assets/
 
-# next-sitemap generated files (postbuild で自動生成されるため git 管理対象外)
-front/public/robots.txt
-front/public/sitemap.xml
-front/public/sitemap-*.xml

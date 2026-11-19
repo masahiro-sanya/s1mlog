@@ -19,6 +19,7 @@ import {
   getTag,
   getWriter,
   getAllContentIds,
+  getAllContentMeta,
   client,
 } from '../microcms';
 
@@ -371,6 +372,70 @@ describe('microCMS API', () => {
         expect.any(Error),
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getAllContentMeta', () => {
+    it('blog は published フィルタと fields を付けて 100 件ずつページングする', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({
+        id: `id-${i}`,
+        updatedAt: 'u',
+        publishedAt: 'p',
+      }));
+      const page2 = [{ id: 'id-100', updatedAt: 'u2', publishedAt: 'p2' }];
+      const mockClient = getMockClient();
+      mockClient.getList
+        .mockResolvedValueOnce({ contents: page1, totalCount: 101, offset: 0, limit: 100 })
+        .mockResolvedValueOnce({ contents: page2, totalCount: 101, offset: 100, limit: 100 });
+
+      const result = await getAllContentMeta('blog');
+
+      expect(result).toHaveLength(101);
+      expect(result[100]).toEqual({ id: 'id-100', updatedAt: 'u2', publishedAt: 'p2' });
+      expect(mockClient.getList).toHaveBeenCalledTimes(2);
+      expect(mockClient.getList).toHaveBeenNthCalledWith(1, {
+        endpoint: 'blog',
+        queries: {
+          fields: 'id,updatedAt,publishedAt',
+          limit: 100,
+          offset: 0,
+          filters: 'publishedAt[exists]',
+        },
+      });
+      expect(mockClient.getList).toHaveBeenNthCalledWith(2, {
+        endpoint: 'blog',
+        queries: {
+          fields: 'id,updatedAt,publishedAt',
+          limit: 100,
+          offset: 100,
+          filters: 'publishedAt[exists]',
+        },
+      });
+    });
+
+    it('tags には published フィルタを付けない', async () => {
+      const mockClient = getMockClient();
+      mockClient.getList.mockResolvedValue({
+        contents: [{ id: 't1', updatedAt: 'u' }],
+        totalCount: 1,
+        offset: 0,
+        limit: 100,
+      });
+
+      const result = await getAllContentMeta('tags');
+
+      expect(result).toEqual([{ id: 't1', updatedAt: 'u' }]);
+      expect(mockClient.getList).toHaveBeenCalledWith({
+        endpoint: 'tags',
+        queries: { fields: 'id,updatedAt,publishedAt', limit: 100, offset: 0 },
+      });
+    });
+
+    it('失敗時は空配列にせず throw する', async () => {
+      const mockClient = getMockClient();
+      mockClient.getList.mockRejectedValue(new Error('API Error'));
+
+      await expect(getAllContentMeta('blog')).rejects.toThrow('API Error');
     });
   });
 });
