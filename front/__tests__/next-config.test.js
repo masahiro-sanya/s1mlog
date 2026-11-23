@@ -67,3 +67,46 @@ describe('next.config.js のセキュリティヘッダ', () => {
     expect(headers['Strict-Transport-Security']).toContain('max-age=63072000');
   });
 });
+
+describe('next.config.js のリダイレクト', () => {
+  const oldHost = [{ type: 'host', value: 's1mlog\\.vercel\\.app' }];
+
+  it('旧ドメイン s1mlog.vercel.app のファイル・ページ・ルートを本番ドメインの最終 URL へ恒久リダイレクトすること', async () => {
+    const rules = await nextConfig.redirects();
+
+    expect(rules).toEqual([
+      {
+        source: '/:file((?:[^/]+/)*[^/]+\\.\\w+)',
+        has: oldHost,
+        destination: 'https://www.s1msys.com/:file',
+        permanent: true,
+      },
+      {
+        source: '/:path+',
+        has: oldHost,
+        destination: 'https://www.s1msys.com/:path+/',
+        permanent: true,
+      },
+      { source: '/', has: oldHost, destination: 'https://www.s1msys.com/', permanent: true },
+    ]);
+  });
+
+  it('host 条件のドットがエスケープされ、似た名前のホストに当たらないこと', async () => {
+    const rules = await nextConfig.redirects();
+
+    for (const rule of rules) {
+      const matcher = new RegExp(`^${rule.has[0].value}$`);
+      expect(matcher.test('s1mlog.vercel.app')).toBe(true);
+      expect(matcher.test('s1mlogxvercelxapp')).toBe(false);
+      expect(matcher.test('www.s1msys.com')).toBe(false);
+    }
+  });
+
+  it('host 条件の無いリダイレクトを持たない（本番ドメイン自身がループしないこと）', async () => {
+    const rules = await nextConfig.redirects();
+
+    for (const rule of rules) {
+      expect(rule.has).toEqual(expect.arrayContaining([expect.objectContaining({ type: 'host' })]));
+    }
+  });
+});
