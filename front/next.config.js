@@ -9,6 +9,36 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    // 旧ドメイン s1mlog.vercel.app が本番と同じ内容を 200 で返していたため、本番ドメインへ寄せる。
+    // canonical だけに頼らず、旧 URL の評価とブックマークを 308 で移す。
+    // host を完全一致で絞るので、プレビュー環境（s1mlog-git-*.vercel.app 等）と本番ドメインは対象外。
+    // has.value は正規表現として ^...$ で照合されるため、ドットはエスケープする。
+    // `/:path*` の捕捉は末尾スラッシュを含まない。そのまま渡すと本番側の trailingSlash リダイレクトで
+    // もう 1 回 308 が挟まるので、ファイル（拡張子付き）・ページ・ルートを分けて最終 URL へ直接飛ばす。
+    const oldHost = [{ type: 'host', value: 's1mlog\\.vercel\\.app' }];
+    const siteUrl = 'https://www.s1msys.com';
+    return [
+      {
+        source: '/:file((?:[^/]+/)*[^/]+\\.\\w+)',
+        has: oldHost,
+        destination: `${siteUrl}/:file`,
+        permanent: true,
+      },
+      {
+        source: '/:path+',
+        has: oldHost,
+        destination: `${siteUrl}/:path+/`,
+        permanent: true,
+      },
+      {
+        source: '/',
+        has: oldHost,
+        destination: `${siteUrl}/`,
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     // 記事ページの SSG を維持するため nonce ベース（動的レンダリングを強制する）ではなく
     // 静的な CSP を採用する。インラインスクリプト経由の XSS は sanitize-html（libs/utils.ts）で
