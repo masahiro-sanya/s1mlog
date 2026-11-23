@@ -72,17 +72,23 @@ const PUBLISHED_FILTER = 'publishedAt[exists]';
 const mergeWithPublishedFilter = (userFilters?: string): string =>
   userFilters ? `${PUBLISHED_FILTER}[and](${userFilters})` : PUBLISHED_FILTER;
 
-// ブログ一覧を取得
-export const getList = async (queries?: MicroCMSQueries) => {
+// ブログ一覧を取得する。取得失敗は throw する（「失敗」と「0 件」を区別したい呼び出し側で使う）。
+// 未設定（isConfigured() が false）は失敗ではないので空リストを返す。
+export const getListOrThrow = async (queries?: MicroCMSQueries) => {
   if (!isConfigured()) {
     return emptyList<Article>();
   }
 
+  return client.getList<Blog>({
+    endpoint: 'blog',
+    queries: { ...queries, filters: mergeWithPublishedFilter(queries?.filters) },
+  });
+};
+
+// ブログ一覧を取得。エラー時は空リストを返す
+export const getList = async (queries?: MicroCMSQueries) => {
   try {
-    return await client.getList<Blog>({
-      endpoint: 'blog',
-      queries: { ...queries, filters: mergeWithPublishedFilter(queries?.filters) },
-    });
+    return await getListOrThrow(queries);
   } catch (error) {
     console.error('Error fetching blog list:', error);
     return emptyList<Article>();
