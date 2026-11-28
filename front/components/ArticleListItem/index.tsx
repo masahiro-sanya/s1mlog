@@ -50,7 +50,8 @@ export default function ArticleListItem({ article, priority = false }: Props) {
         <dl className={styles.content}>
           <dt className={styles.title}>{article.title}</dt>
           <dd className={styles.tagRow}>
-            <TagList tags={article.tags} hasLink={false} />
+            {/* 一覧では先頭のタグ 1 個だけ出す。題名の下に文字を増やさないため */}
+            <TagList tags={article.tags?.slice(0, 1)} hasLink={false} />
           </dd>
           <dd className={styles.date}>
             <PublishedDate date={article.publishedAt || article.createdAt} />

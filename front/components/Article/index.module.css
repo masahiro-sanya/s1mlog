@@ -73,6 +73,9 @@
   font-size: 1rem;
   line-height: 1.9;
   color: var(--color-text-main);
+  /* 本文は句読点を詰めない（palt を外す）。詰めると「。」の後ろが次の文字にくっついて密に見える */
+  font-feature-settings: 'cv11';
+  letter-spacing: 0;
 }
 
 .content *:first-child {
@@ -87,6 +90,7 @@
   font-weight: 700;
   line-height: 1.35;
   letter-spacing: -0.018em;
+  font-feature-settings: 'palt', 'cv11';
 }
 
 .content > h1 {
@@ -277,7 +281,6 @@
   }
 
   .content {
-    font-size: 0.95rem;
     line-height: 1.85;
   }
 
