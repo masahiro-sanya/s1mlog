@@ -45,6 +45,23 @@ describe('ArticleList', () => {
     expect(screen.getByText('1 January, 2024')).toBeInTheDocument();
   });
 
+  it('タグは先頭の 1 個だけ表示する', () => {
+    const withTags: Article[] = [
+      {
+        ...mockArticles[0],
+        tags: [
+          { id: 'tag1', name: 'React', createdAt: '', updatedAt: '' },
+          { id: 'tag2', name: 'Next.js', createdAt: '', updatedAt: '' },
+        ],
+      },
+    ];
+
+    render(<ArticleList articles={withTags} />);
+
+    expect(screen.getByText(/React/)).toBeInTheDocument();
+    expect(screen.queryByText(/Next\.js/)).not.toBeInTheDocument();
+  });
+
   it('空の記事リストを処理できる', () => {
     render(<ArticleList articles={[]} />);
 
